@@ -4,8 +4,15 @@
   "version": "0.0.0",
   "license": "BSD-3-Clause",
   "type": "module",
+  "scripts": {
+    "upload": "devvit upload",
+    "play": "devvit playtest mlbClutch"
+  },
   "dependencies": {
-    "@devvit/public-api": "0.11.10"
+    "@devvit/public-api": "0.11.10",
+    "@google/generative-ai": "^0.24.0",
+    "openai": "^4.88.0",
+    "ts-node": "^10.9.2"
   },
   "devDependencies": {
     "typescript": "5.3.2"
