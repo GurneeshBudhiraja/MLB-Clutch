@@ -1,5 +1,18 @@
-import { Devvit, StateSetter, useAsync } from "@devvit/public-api";
+import { Devvit, StateSetter, useAsync, useState } from "@devvit/public-api";
 import { getTriviaQuestion } from "../utils/openAI.js";
+
+const sampleObject = {
+  question: 'Which MLB team is known for their iconic "Curse of the Bambino"?',
+  options: [
+    "Chicago Cubs",
+    "Boston Red Sox",
+    "New York Yankees",
+    "Los Angeles Dodgers",
+  ],
+  answer: 1,
+  hint: "This team famously broke a long championship drought in 2004!",
+  success: true,
+};
 
 function QuizPage({
   setCurrentPage,
@@ -8,6 +21,62 @@ function QuizPage({
   setCurrentPage: StateSetter<CurrentPageType>;
   context: Devvit.Context;
 }) {
+  const [triviaQuestion, setTriviaQuestion] = useState<TriviaQuestion>({
+    question: "",
+    answer: -1,
+    options: [],
+    success: false,
+    hint: "",
+  });
+  // const [triviaQuestion, setTriviaQuestion] =
+  //   useState<TriviaQuestion>(sampleObject);
+  const [showHint, setShowHint] = useState<boolean>(false);
+  const [selectedOption, setSelectedOption] = useState<number>(-1);
+  const [error, setError] = useState<string>("");
+  const [success, setSuccess] = useState<string>("");
+
+  // Automatically run the function on the component render
+  // TODO: Uncomment the code below to fetch the trivia question
+  const {
+    data,
+    loading,
+    error: asyncError,
+  } = useAsync(
+    async () => {
+      try {
+        console.log("This is working");
+        // Gets the openAI API key
+        const openAIKey = await context.settings.get("open-ai-api-key");
+        console.log(openAIKey);
+        if (!openAIKey || typeof openAIKey !== "string") {
+          console.log("OpenAI API key missing or not a string");
+          setCurrentPage("home");
+          return null;
+        }
+        // Fetches the trivia question
+        const aiTriviaResponse = await getTriviaQuestion(openAIKey, "english");
+        // If the response is not successful, return to the home page
+        if (!aiTriviaResponse.success) {
+          console.log("Failed to generate new question.");
+          setCurrentPage("home");
+          return null;
+        }
+        console.log(aiTriviaResponse);
+        return aiTriviaResponse;
+      } catch (error) {
+        setCurrentPage("home");
+        return null;
+      }
+    },
+    {
+      finally: (data) => {
+        if (data) {
+          setTriviaQuestion(data);
+        }
+      },
+    }
+  );
+
   return (
     <zstack width="100%" height="100%" grow={true}>
       {/* Background image */}
@@ -31,7 +100,7 @@ function QuizPage({
         borderColor="CoolGray-100"
         cornerRadius="medium"
       >
-        {/* Leaderboard icon at top right */}
+        {/* Leaderboard icon and back icon */}
         <hstack alignment="top" width="100%" grow={false} gap="large">
           <vstack
             alignment="start middle"
@@ -51,21 +120,61 @@ function QuizPage({
             />
           </vstack>
         </hstack>
-        <button
-          onPress={async () => {
-            console.log("Pressed");
-            const openAIKey = await context.settings.get("open-ai-api-key");
-            if (!openAIKey || typeof openAIKey !== "string") {
-              console.log("Invalid openAI key");
-              return;
-            }
-            const triviaQuestion = await getTriviaQuestion(openAIKey);
-            console.log("Trivia question is: ");
-            console.log(triviaQuestion);
-          }}
-        >
-          Click me
-        </button>
+
+        {/* Show loading state or button based on the loading status */}
+        {loading ? (
+          <text>Loading trivia question...</text>
+        ) : (
+          <vstack>
+            <text size="small">{triviaQuestion.question}</text>
+            <spacer size="small" />
+            <vstack>
+              {triviaQuestion.options.map((option, index) => (
+                <text
+                  size="small"
+                  color={
+                    selectedOption === index ? "AlienBlue-400" : "AlienBlue-200"
+                  }
+                  onPress={() => setSelectedOption(index)}
+                >
+                  {index + 1}. {option}
+                </text>
+              ))}
+            </vstack>
+            <spacer size="small" />
+            <vstack>
+              {showHint && <text size="small">{triviaQuestion.hint}</text>}
+              <button onPress={() => setShowHint(!showHint)}>Hint</button>
+            </vstack>
+            <spacer size="small" />
+            <button
+              onPress={() => {
+                setError("");
+                setSuccess("");
+                if (selectedOption === -1) {
+                  setError("Please select an option");
+                } else if (selectedOption === triviaQuestion.answer) {
+                  setSuccess("Correct answer");
+                } else {
+                  setError("Incorrect answer");
+                }
+              }}
+            >
+              Submit
+            </button>
+            <spacer size="small" />
+            {/* TODO: remove in prod */}
+            <button onPress={() => console.log(triviaQuestion)}>
+              Click to check the state
+            </button>
+          </vstack>
+        )}
+
+        {/* Show error if there is one */}
+        {error && <text color="red">Error: {error}</text>}
+
+        {/* Show success message if the answer is correct */}
+        {success && <text color="green">Success: {success}</text>}
       </vstack>
     </zstack>
   );
