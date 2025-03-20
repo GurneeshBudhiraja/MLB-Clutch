@@ -44,10 +44,8 @@ function QuizPage({
   } = useAsync(
     async () => {
       try {
-        console.log("This is working");
         // Gets the openAI API key
         const openAIKey = await context.settings.get("open-ai-api-key");
-        console.log(openAIKey);
         if (!openAIKey || typeof openAIKey !== "string") {
           console.log("OpenAI API key missing or not a string");
           setCurrentPage("home");
