@@ -1,6 +1,6 @@
 import { Devvit } from "@devvit/public-api";
 import { Loading } from "./components/Loading.js";
-import Router from "./pages/Layout.js";
+import Layout from "./pages/Layout.js";
 
 Devvit.configure({
   redis: true,
@@ -8,25 +8,21 @@ Devvit.configure({
   redditAPI: true,
 });
 
-
 Devvit.addSettings([
   {
-    name: 'open-ai-api-key',
-    label: 'Open AI API key',
-    type: 'string',
+    name: "open-ai-api-key",
+    label: "Open AI API key",
+    type: "string",
     isSecret: true,
-    scope: 'app',
+    scope: "app",
   },
 ]);
-
-
-
 
 // Router for the application
 Devvit.addCustomPostType({
   name: "MLB Clutch Post",
   height: "tall",
-  render: (context) => <Router context={context} />,
+  render: (context) => <Layout context={context} />,
 });
 
 Devvit.addMenuItem({

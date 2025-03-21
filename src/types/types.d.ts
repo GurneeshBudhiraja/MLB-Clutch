@@ -1,7 +1,14 @@
 
 type CurrentPageType = "home" | "quiz" | "redditOfTheDay";
 
-type SupportedTriviaLanguagesType = "english" | "spanish" | "japanese"
+type TriviaLanguage = "english" | "spanish" | "japanese"
+
+type TriviaDifficulty = "easy" | "medium" | "hard";
+
+type TriviaSettings = {
+  language: TriviaLanguage;
+  difficulty: TriviaDifficulty;
+}
 
 type TriviaQuestion = {
   question: string;

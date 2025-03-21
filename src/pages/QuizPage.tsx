@@ -17,9 +17,13 @@ const sampleObject = {
 function QuizPage({
   setCurrentPage,
   context,
+  language,
+  difficulty,
 }: {
   setCurrentPage: StateSetter<CurrentPageType>;
   context: Devvit.Context;
+  language: TriviaLanguage;
+  difficulty: TriviaDifficulty;
 }) {
   const [triviaQuestion, setTriviaQuestion] = useState<TriviaQuestion>({
     question: "",
@@ -52,7 +56,11 @@ function QuizPage({
           return null;
         }
         // Fetches the trivia question
-        const aiTriviaResponse = await getTriviaQuestion(openAIKey, "english");
+        const aiTriviaResponse = await getTriviaQuestion(
+          openAIKey,
+          language,
+          difficulty
+        );
         // If the response is not successful, return to the home page
         if (!aiTriviaResponse.success) {
           console.log("Failed to generate new question.");
