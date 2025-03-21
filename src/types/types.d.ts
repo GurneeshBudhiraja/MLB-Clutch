@@ -7,7 +7,6 @@ type TriviaDifficulty = "easy" | "medium" | "hard";
 
 type TriviaSettings = {
   language: TriviaLanguage;
-  difficulty: TriviaDifficulty;
 }
 
 type TriviaQuestion = {

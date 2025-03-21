@@ -1,4 +1,4 @@
-import { Devvit, useForm, useState } from "@devvit/public-api";
+import { Devvit, useAsync, useForm, useState } from "@devvit/public-api";
 import LiveScore from "./LiveScorePage.js";
 import HomePage from "./HomePage.js";
 import QuizPage from "./QuizPage.js";
@@ -11,7 +11,6 @@ function Layout({ context }: { context: Devvit.Context }) {
   // Quiz settings
   const [quizSettings, setQuizSettings] = useState<TriviaSettings>({
     language: "english",
-    difficulty: "easy",
   });
 
   const quizSettingsForm = useForm(
@@ -20,28 +19,6 @@ function Layout({ context }: { context: Devvit.Context }) {
       description:
         "Customize your quiz experience by selecting both difficulty level and preferred language for questions",
       fields: [
-        {
-          name: "level",
-          type: "select",
-          label: "Select the difficulty",
-          helpText:
-            "This will determine the complexity of questions you'll receive",
-          required: true,
-          options: [
-            {
-              label: "Easy",
-              value: "easy",
-            },
-            {
-              label: "Medium",
-              value: "medium",
-            },
-            {
-              label: "Hard",
-              value: "hard",
-            },
-          ],
-        },
         {
           name: "language",
           type: "select",
@@ -68,15 +45,42 @@ function Layout({ context }: { context: Devvit.Context }) {
       cancelLabel: "Go Back",
     },
     async (values) => {
-      console.log("Difficulty:", values.level[0]);
       console.log("Language:", values.language[0]);
       setQuizSettings({
-        difficulty: values.level[0] as TriviaDifficulty,
         language: values.language[0] as TriviaLanguage,
       });
       setCurrentPage("quiz");
     }
   );
+
+  useAsync(async () => {
+    try {
+      const doExists = await context.redis.exists(`${context.userId}`);
+      if (!doExists) {
+        await context.redis.set(
+          `${context.userId}`,
+          JSON.stringify({ quizStreak: 0 })
+        );
+        console.log("Reddis has been updated");
+      } else {
+        console.log(doExists);
+        const jsonRedisStorage = await context.redis.get(`${context.userId}`);
+        if (!jsonRedisStorage) {
+          throw new Error("Undefined jsonRedisStorage.");
+        }
+        const redisStorage = JSON.parse(jsonRedisStorage);
+        // TODO: remove in production
+        console.dir(redisStorage, { depth: null });
+        // await context.redis.del(`${context.userId}`);
+      }
+    } catch (error) {
+      console.log(error);
+      // TODO: change in production
+      context.ui.showToast("Error getting data from Redis storage");
+    } finally {
+      return {};
+    }
+  });
 
   switch (currentPage) {
     case "quiz":
@@ -84,7 +88,6 @@ function Layout({ context }: { context: Devvit.Context }) {
         <QuizPage
           context={context}
           setCurrentPage={setCurrentPage}
-          difficulty={quizSettings.difficulty}
           language={quizSettings.language}
         />
       );
@@ -92,8 +95,12 @@ function Layout({ context }: { context: Devvit.Context }) {
     default:
       return (
         <hstack>
-          <button onPress={() => context.ui.showForm(quizSettingsForm)}>
-            Quiz
+          <button
+            onPress={() => {
+              context.ui.showForm(quizSettingsForm);
+            }}
+          >
+            Ultimate Streak Mode
           </button>
         </hstack>
       );

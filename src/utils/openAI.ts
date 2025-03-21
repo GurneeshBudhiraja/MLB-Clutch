@@ -1,6 +1,5 @@
 import OpenAI from "openai";
 
-["player, team, historical event, MLB, baseball rules, baseball pitch, stadiums"]
 
 export function randomSelection(selectionChoice: "topic" | "questionLength") {
   if (selectionChoice === "topic") {
