@@ -63,7 +63,6 @@ function Layout({ context }: { context: Devvit.Context }) {
         );
         console.log("Reddis has been updated");
       } else {
-        console.log(doExists);
         const jsonRedisStorage = await context.redis.get(`${context.userId}`);
         if (!jsonRedisStorage) {
           throw new Error("Undefined jsonRedisStorage.");

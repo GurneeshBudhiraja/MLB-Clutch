@@ -23,15 +23,15 @@ function QuizPage({
   context: Devvit.Context;
   language: TriviaLanguage;
 }) {
-  // const [triviaQuestion, setTriviaQuestion] = useState<TriviaQuestion>({
-  //   question: "",
-  //   answer: -1,
-  //   options: [],
-  //   success: false,
-  //   hint: "",
-  // });
-  const [triviaQuestion, setTriviaQuestion] =
-    useState<TriviaQuestion>(sampleObject);
+  const [triviaQuestion, setTriviaQuestion] = useState<TriviaQuestion>({
+    question: "",
+    answer: -1,
+    options: [],
+    success: false,
+    hint: "",
+  });
+  // const [triviaQuestion, setTriviaQuestion] =
+  //   useState<TriviaQuestion>(sampleObject);
   const [showHint, setShowHint] = useState<boolean>(false);
   const [selectedOption, setSelectedOption] = useState<number>(-1);
   const [error, setError] = useState<string>("");
@@ -40,43 +40,40 @@ function QuizPage({
 
   // Automatically run the function on the component render
   // TODO: Uncomment the code below to fetch the trivia question
-  // const {
-  //   data,
-  //   loading,
-  //   error: asyncError,
-  // } = useAsync(
-  //   async () => {
-  //     try {
-  //       // Gets the openAI API key
-  //       const openAIKey = await context.settings.get("open-ai-api-key");
-  //       if (!openAIKey || typeof openAIKey !== "string") {
-  //         console.log("OpenAI API key missing or not a string");
-  //         setCurrentPage("home");
-  //         return null;
-  //       }
-  //       // Fetches the trivia question
-  //       const aiTriviaResponse = await getTriviaQuestion(openAIKey, language);
-  //       // If the response is not successful, return to the home page
-  //       if (!aiTriviaResponse.success) {
-  //         console.log("Failed to generate new question.");
-  //         setCurrentPage("home");
-  //         return null;
-  //       }
-  //       console.log(aiTriviaResponse);
-  //       return aiTriviaResponse;
-  //     } catch (error) {
-  //       setCurrentPage("home");
-  //       return null;
-  //     }
-  //   },
-  //   {
-  //     finally: (data) => {
-  //       if (data) {
-  //         setTriviaQuestion(data);
-  //       }
-  //     },
-  //   }
-  // );
+  const generateTriviaQuestion = async () => {
+    try {
+      setLoading(true);
+      // Gets the openAI API key
+      const openAIKey = await context.settings.get("open-ai-api-key");
+      if (!openAIKey || typeof openAIKey !== "string") {
+        console.log("OpenAI API key missing or not a string");
+        setCurrentPage("home");
+        return null;
+      }
+      // Fetches the trivia question
+      const aiTriviaResponse = await getTriviaQuestion(openAIKey, language);
+      // If the response is not successful, return to the home page
+      if (!aiTriviaResponse.success) {
+        console.log("Failed to generate new question.");
+        setCurrentPage("home");
+        return null;
+      }
+      console.log(aiTriviaResponse);
+      return aiTriviaResponse;
+    } catch (error) {
+      setCurrentPage("home");
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+  useAsync(generateTriviaQuestion, {
+    finally: (data) => {
+      if (data) {
+        setTriviaQuestion(data);
+      }
+    },
+  });
 
   return (
     <zstack width="100%" height="100%" grow={true}>
@@ -173,6 +170,13 @@ function QuizPage({
                     `${context.userId}`,
                     JSON.stringify(formattedObject)
                   );
+                  context.ui.showToast("Generating new question.");
+                  setLoading(true);
+                  const newTriviaQuestion = await generateTriviaQuestion();
+                  if (newTriviaQuestion) {
+                    setTriviaQuestion(newTriviaQuestion);
+                  }
+                  
                 } else {
                   // When wrong option has been selected
                   context.ui.showToast(
@@ -188,6 +192,7 @@ function QuizPage({
                     `${context.userId}`,
                     JSON.stringify(formattedObject)
                   );
+                  setCurrentPage("home");
                 }
               }}
             >
