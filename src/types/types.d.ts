@@ -16,3 +16,11 @@ type TriviaQuestion = {
   success: boolean;
   hint: string;
 }
+
+
+type ApplicationData = {
+  jobId: string;
+  qotd: TriviaQuestion;
+  // Objects inside object
+  users: Record<string, Record<string, any>>
+}

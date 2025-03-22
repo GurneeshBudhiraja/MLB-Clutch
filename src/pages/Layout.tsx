@@ -13,6 +13,8 @@ function Layout({ context }: { context: Devvit.Context }) {
     language: "english",
   });
 
+  const [userRedisData, setUserRedisData] = useState<Record<string, any>>({});
+
   const quizSettingsForm = useForm(
     {
       title: "Quiz Settings",
@@ -55,27 +57,37 @@ function Layout({ context }: { context: Devvit.Context }) {
 
   useAsync(async () => {
     try {
-      const doExists = await context.redis.exists(`${context.userId}`);
-      if (!doExists) {
-        await context.redis.set(
-          `${context.userId}`,
-          JSON.stringify({ quizStreak: 0 })
+      const applicationDataJSON = await context.redis.get("application-data");
+
+      // Checks if the application-data exists in the Redis storage
+      if (!applicationDataJSON) {
+        throw new Error(
+          "Something went wrong. Please contact mod to reinstall the application."
         );
-        console.log("Reddis has been updated");
-      } else {
-        const jsonRedisStorage = await context.redis.get(`${context.userId}`);
-        if (!jsonRedisStorage) {
-          throw new Error("Undefined jsonRedisStorage.");
-        }
-        const redisStorage = JSON.parse(jsonRedisStorage);
-        // TODO: remove in production
-        console.dir(redisStorage, { depth: null });
-        // await context.redis.del(`${context.userId}`);
       }
-    } catch (error) {
+      const applicationData = JSON.parse(
+        applicationDataJSON
+      ) as ApplicationData;
+      const { users } = applicationData;
+      const currentUserInfo = users[`${context.userId}`];
+      if (!currentUserInfo) {
+        applicationData["users"][`${context.userId}`] = {
+          ...applicationData["users"][`${context.userId}`],
+          quizStreak: 0,
+        };
+        setUserRedisData(applicationData["users"]);
+        await context.redis.set(
+          "application-data",
+          JSON.stringify(applicationData)
+        );
+      } else {
+        setUserRedisData(applicationData["users"]);
+      }
+    } catch (error: any) {
       console.log(error);
-      // TODO: change in production
-      context.ui.showToast("Error getting data from Redis storage");
+      context.ui.showToast(
+        error.message ?? "Something went wrong. Please try again later."
+      );
     } finally {
       return {};
     }
@@ -94,6 +106,18 @@ function Layout({ context }: { context: Devvit.Context }) {
     default:
       return (
         <hstack>
+          <button
+            onPress={async (data) => {
+              console.log(data);
+              const applicationDataJson = await context.redis.get(
+                "application-data"
+              );
+              console.log("application-data is:");
+              console.log(applicationDataJson);
+            }}
+          >
+            check question of the day and user data
+          </button>
           <button
             onPress={() => {
               context.ui.showForm(quizSettingsForm);

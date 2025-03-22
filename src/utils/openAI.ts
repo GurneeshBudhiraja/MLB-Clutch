@@ -1,7 +1,7 @@
 import OpenAI from "openai";
 
 
-export function randomSelection(selectionChoice: "topic" | "questionLength") {
+export function randomSelection(selectionChoice: "topic" | "questionLength" | "difficulty") {
   if (selectionChoice === "topic") {
     const topicChoiceList = ["baseball player", "baseball team", "baseball historical event", "MLB", "baseball rules", "baseball pitch", "baseball stadiums"]
     const randomIndex = Math.floor(Math.random() * topicChoiceList.length);
@@ -10,18 +10,22 @@ export function randomSelection(selectionChoice: "topic" | "questionLength") {
     const questionLengthChoiceList = ["short", "medium", "long"]
     const randomIndex = Math.floor(Math.random() * questionLengthChoiceList.length);
     return questionLengthChoiceList[randomIndex];
+  } else if (selectionChoice === "difficulty") {
+    const difficultyChoiceList = ["easy", "medium", "hard"]
+    const randomIndex = Math.floor(Math.random() * difficultyChoiceList.length);
+    return difficultyChoiceList[randomIndex];
   }
 
 }
 
 
-export async function getTriviaQuestion(apiKey: string, language: TriviaLanguage = "english", difficulty: TriviaDifficulty = "easy"): Promise<TriviaQuestion> {
+export async function getTriviaQuestion(apiKey: string, language: TriviaLanguage = "english", model: string = "gpt-4o-mini"): Promise<TriviaQuestion> {
   try {
     const questionTopic = randomSelection("topic") as string;
     const questionLength = randomSelection("questionLength") as string;
+    const difficulty = randomSelection("difficulty")
     console.log("I am in getTriviaQuestion")
     console.log({
-      apiKey,
       language,
       difficulty,
       questionTopic,
@@ -31,7 +35,7 @@ export async function getTriviaQuestion(apiKey: string, language: TriviaLanguage
       apiKey
     });
     const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model,
       messages: [
         {
           role: "system",
@@ -75,7 +79,16 @@ export async function getTriviaQuestion(apiKey: string, language: TriviaLanguage
     ) {
       throw new Error("Invalid response format from OpenAI.");
     }
-
+    console.log("content generated from inside openAI.ts is below: ")
+    console.log("==================")
+    console.log({
+      question: parsedData.question,
+      options: parsedData.options,
+      answer: parsedData.answerIndex,
+      hint: parsedData.hint,
+      success: true,
+    });
+    console.log("==================")
     return {
       question: parsedData.question,
       options: parsedData.options,

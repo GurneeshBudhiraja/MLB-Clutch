@@ -157,40 +157,43 @@ function QuizPage({
                   context.ui.showToast(
                     "Correct answer, adding one to you current streak"
                   );
-                  const jsonRedisResponse = (await context.redis.get(
-                    `${context.userId}`
+                  const jsonApplicationData = (await context.redis.get(
+                    `application-data`
                   )) as string;
-                  const redisResponse = JSON.parse(jsonRedisResponse);
-                  const formattedObject = {
-                    ...redisResponse,
-                    quizStreak: redisResponse.quizStreak + 1,
-                  };
+                  const applicationData = JSON.parse(
+                    jsonApplicationData
+                  ) as ApplicationData;
 
-                  await context.redis.set(
-                    `${context.userId}`,
-                    JSON.stringify(formattedObject)
-                  );
+                  applicationData["users"][`${context.userId}`]["quizStreak"]++;
                   context.ui.showToast("Generating new question.");
                   setLoading(true);
                   const newTriviaQuestion = await generateTriviaQuestion();
                   if (newTriviaQuestion) {
                     setTriviaQuestion(newTriviaQuestion);
                   }
-                  
+                  await context.redis.set(
+                    `application-data`,
+                    JSON.stringify(applicationData)
+                  );
                 } else {
                   // When wrong option has been selected
                   context.ui.showToast(
                     "You have selected the wrong answer and your streak is broken."
                   );
-                  const jsonRedisResponse = (await context.redis.get(
-                    `${context.userId}`
+                  const jsonApplicationData = (await context.redis.get(
+                    `application-data`
                   )) as string;
-                  const redisResponse = JSON.parse(jsonRedisResponse);
-                  const formattedObject = { ...redisResponse, quizStreak: 0 };
+                  const applicationData = JSON.parse(
+                    jsonApplicationData
+                  ) as ApplicationData;
+
+                  applicationData["users"][`${context.userId}`][
+                    "quizStreak"
+                  ] = 0;
 
                   await context.redis.set(
-                    `${context.userId}`,
-                    JSON.stringify(formattedObject)
+                    `application-data`,
+                    JSON.stringify(applicationData)
                   );
                   setCurrentPage("home");
                 }
