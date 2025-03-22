@@ -17,9 +17,11 @@ const sampleObject = {
 function QuizPage({
   setCurrentPage,
   context,
+  language,
 }: {
   setCurrentPage: StateSetter<CurrentPageType>;
   context: Devvit.Context;
+  language: TriviaLanguage;
 }) {
   const [triviaQuestion, setTriviaQuestion] = useState<TriviaQuestion>({
     question: "",
@@ -34,46 +36,44 @@ function QuizPage({
   const [selectedOption, setSelectedOption] = useState<number>(-1);
   const [error, setError] = useState<string>("");
   const [success, setSuccess] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
 
   // Automatically run the function on the component render
   // TODO: Uncomment the code below to fetch the trivia question
-  const {
-    data,
-    loading,
-    error: asyncError,
-  } = useAsync(
-    async () => {
-      try {
-        // Gets the openAI API key
-        const openAIKey = await context.settings.get("open-ai-api-key");
-        if (!openAIKey || typeof openAIKey !== "string") {
-          console.log("OpenAI API key missing or not a string");
-          setCurrentPage("home");
-          return null;
-        }
-        // Fetches the trivia question
-        const aiTriviaResponse = await getTriviaQuestion(openAIKey, "english");
-        // If the response is not successful, return to the home page
-        if (!aiTriviaResponse.success) {
-          console.log("Failed to generate new question.");
-          setCurrentPage("home");
-          return null;
-        }
-        console.log(aiTriviaResponse);
-        return aiTriviaResponse;
-      } catch (error) {
+  const generateTriviaQuestion = async () => {
+    try {
+      setLoading(true);
+      // Gets the openAI API key
+      const openAIKey = await context.settings.get("open-ai-api-key");
+      if (!openAIKey || typeof openAIKey !== "string") {
+        console.log("OpenAI API key missing or not a string");
         setCurrentPage("home");
         return null;
       }
-    },
-    {
-      finally: (data) => {
-        if (data) {
-          setTriviaQuestion(data);
-        }
-      },
+      // Fetches the trivia question
+      const aiTriviaResponse = await getTriviaQuestion(openAIKey, language);
+      // If the response is not successful, return to the home page
+      if (!aiTriviaResponse.success) {
+        console.log("Failed to generate new question.");
+        setCurrentPage("home");
+        return null;
+      }
+      console.log(aiTriviaResponse);
+      return aiTriviaResponse;
+    } catch (error) {
+      setCurrentPage("home");
+      return null;
+    } finally {
+      setLoading(false);
     }
-  );
+  };
+  useAsync(generateTriviaQuestion, {
+    finally: (data) => {
+      if (data) {
+        setTriviaQuestion(data);
+      }
+    },
+  });
 
   return (
     <zstack width="100%" height="100%" grow={true}>
@@ -146,25 +146,62 @@ function QuizPage({
             </vstack>
             <spacer size="small" />
             <button
-              onPress={() => {
+              onPress={async () => {
                 setError("");
                 setSuccess("");
                 if (selectedOption === -1) {
+                  // When no option has been selected
                   setError("Please select an option");
                 } else if (selectedOption === triviaQuestion.answer) {
-                  setSuccess("Correct answer");
+                  // When correct option has been selected
+                  context.ui.showToast(
+                    "Correct answer, adding one to you current streak"
+                  );
+                  const jsonApplicationData = (await context.redis.get(
+                    `application-data`
+                  )) as string;
+                  const applicationData = JSON.parse(
+                    jsonApplicationData
+                  ) as ApplicationData;
+
+                  applicationData["users"][`${context.userId}`]["quizStreak"]++;
+                  context.ui.showToast("Generating new question.");
+                  setLoading(true);
+                  const newTriviaQuestion = await generateTriviaQuestion();
+                  if (newTriviaQuestion) {
+                    setTriviaQuestion(newTriviaQuestion);
+                  }
+                  await context.redis.set(
+                    `application-data`,
+                    JSON.stringify(applicationData)
+                  );
                 } else {
-                  setError("Incorrect answer");
+                  // When wrong option has been selected
+                  context.ui.showToast(
+                    "You have selected the wrong answer and your streak is broken."
+                  );
+                  const jsonApplicationData = (await context.redis.get(
+                    `application-data`
+                  )) as string;
+                  const applicationData = JSON.parse(
+                    jsonApplicationData
+                  ) as ApplicationData;
+
+                  applicationData["users"][`${context.userId}`][
+                    "quizStreak"
+                  ] = 0;
+
+                  await context.redis.set(
+                    `application-data`,
+                    JSON.stringify(applicationData)
+                  );
+                  setCurrentPage("home");
                 }
               }}
             >
               Submit
             </button>
             <spacer size="small" />
-            {/* TODO: remove in prod */}
-            <button onPress={() => console.log(triviaQuestion)}>
-              Click to check the state
-            </button>
           </vstack>
         )}
 
