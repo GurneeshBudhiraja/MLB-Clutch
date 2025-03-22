@@ -1,4 +1,10 @@
-import { Devvit, StateSetter, useAsync, useState } from "@devvit/public-api";
+import {
+  Devvit,
+  StateSetter,
+  useAsync,
+  useForm,
+  useState,
+} from "@devvit/public-api";
 import { getTriviaQuestion } from "../utils/openAI.js";
 
 const sampleObject = {
@@ -23,19 +29,22 @@ function QuizPage({
   context: Devvit.Context;
   language: TriviaLanguage;
 }) {
-  const [triviaQuestion, setTriviaQuestion] = useState<TriviaQuestion>({
-    question: "",
-    answer: -1,
-    options: [],
-    success: false,
-    hint: "",
-  });
-  // const [triviaQuestion, setTriviaQuestion] =
-  //   useState<TriviaQuestion>(sampleObject);
+  // const [triviaQuestion, setTriviaQuestion] = useState<TriviaQuestion>({
+  //   question: "",
+  //   answer: -1,
+  //   options: [],
+  //   success: false,
+  //   hint: "",
+  // });
+  const [triviaQuestion, setTriviaQuestion] =
+    useState<TriviaQuestion>(sampleObject);
   const [showHint, setShowHint] = useState<boolean>(false);
   const [selectedOption, setSelectedOption] = useState<number>(-1);
   const [error, setError] = useState<string>("");
-  const [success, setSuccess] = useState<string>("");
+  const [modal, setModal] = useState<{ showModal: boolean; success: boolean }>({
+    showModal: false,
+    success: false,
+  });
   const [loading, setLoading] = useState<boolean>(false);
 
   // Automatically run the function on the component render
@@ -67,13 +76,14 @@ function QuizPage({
       setLoading(false);
     }
   };
-  useAsync(generateTriviaQuestion, {
-    finally: (data) => {
-      if (data) {
-        setTriviaQuestion(data);
-      }
-    },
-  });
+
+  // useAsync(generateTriviaQuestion, {
+  //   finally: (data) => {
+  //     if (data) {
+  //       setTriviaQuestion(data);
+  //     }
+  //   },
+  // });
 
   return (
     <zstack width="100%" height="100%" grow={true}>
@@ -147,16 +157,12 @@ function QuizPage({
             <spacer size="small" />
             <button
               onPress={async () => {
-                setError("");
-                setSuccess("");
                 if (selectedOption === -1) {
                   // When no option has been selected
                   setError("Please select an option");
                 } else if (selectedOption === triviaQuestion.answer) {
                   // When correct option has been selected
-                  context.ui.showToast(
-                    "Correct answer, adding one to you current streak"
-                  );
+                  setModal({ showModal: true, success: true });
                   const jsonApplicationData = (await context.redis.get(
                     `application-data`
                   )) as string;
@@ -165,21 +171,13 @@ function QuizPage({
                   ) as ApplicationData;
 
                   applicationData["users"][`${context.userId}`]["quizStreak"]++;
-                  context.ui.showToast("Generating new question.");
-                  setLoading(true);
-                  const newTriviaQuestion = await generateTriviaQuestion();
-                  if (newTriviaQuestion) {
-                    setTriviaQuestion(newTriviaQuestion);
-                  }
                   await context.redis.set(
                     `application-data`,
                     JSON.stringify(applicationData)
                   );
                 } else {
                   // When wrong option has been selected
-                  context.ui.showToast(
-                    "You have selected the wrong answer and your streak is broken."
-                  );
+                  setModal({ showModal: true, success: false });
                   const jsonApplicationData = (await context.redis.get(
                     `application-data`
                   )) as string;
@@ -195,7 +193,7 @@ function QuizPage({
                     `application-data`,
                     JSON.stringify(applicationData)
                   );
-                  setCurrentPage("home");
+                  console.log("Updated the application data");
                 }
               }}
             >
@@ -204,13 +202,56 @@ function QuizPage({
             <spacer size="small" />
           </vstack>
         )}
-
-        {/* Show error if there is one */}
-        {error && <text color="red">Error: {error}</text>}
-
-        {/* Show success message if the answer is correct */}
-        {success && <text color="green">Success: {success}</text>}
       </vstack>
+
+      {/* Modal  */}
+      {modal.showModal && (
+        <zstack width="100%" height="100%" alignment="middle center">
+          <vstack
+            padding="large"
+            gap="medium"
+            cornerRadius="medium"
+            border="thin"
+            borderColor="AlienBlue-200"
+            backgroundColor="neutral-background"
+            width="80%"
+            alignment="middle center"
+          >
+            {modal.success && (
+              <text color={"green"} size="xlarge">
+                Correct Answer!
+              </text>
+            )}
+            {!modal.success && (
+              <text color={"red"} size="xlarge">
+                Wrong Answer!
+              </text>
+            )}
+            {modal.success && <text>Your streak has been increased.</text>}
+            {!modal.success && <text>Your streak has been broken</text>}
+            <spacer size="medium" />
+            <hstack gap="medium">
+              <button
+                appearance="primary"
+                onPress={() => setCurrentPage("home")}
+              >
+                Back to Home
+              </button>
+              {modal.success && (
+                <button
+                  appearance="secondary"
+                  onPress={() => {
+                    // Add logic here if you want to load a new question
+                    setSelectedOption(-1);
+                  }}
+                >
+                  Continue
+                </button>
+              )}
+            </hstack>
+          </vstack>
+        </zstack>
+      )}
     </zstack>
   );
 }
