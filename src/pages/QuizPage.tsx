@@ -6,6 +6,7 @@ import {
   useState,
 } from "@devvit/public-api";
 import { getTriviaQuestion } from "../utils/openAI.js";
+import { Loading } from "../components/Loading.js";
 
 const sampleObject = {
   question: 'Which MLB team is known for their iconic "Curse of the Bambino"?',
@@ -29,15 +30,15 @@ function QuizPage({
   context: Devvit.Context;
   language: TriviaLanguage;
 }) {
-  // const [triviaQuestion, setTriviaQuestion] = useState<TriviaQuestion>({
-  //   question: "",
-  //   answer: -1,
-  //   options: [],
-  //   success: false,
-  //   hint: "",
-  // });
-  const [triviaQuestion, setTriviaQuestion] =
-    useState<TriviaQuestion>(sampleObject);
+  const [triviaQuestion, setTriviaQuestion] = useState<TriviaQuestion>({
+    question: "",
+    answer: -1,
+    options: [],
+    success: false,
+    hint: "",
+  });
+  // const [triviaQuestion, setTriviaQuestion] =
+  //   useState<TriviaQuestion>(sampleObject);
   const [showHint, setShowHint] = useState<boolean>(false);
   const [selectedOption, setSelectedOption] = useState<number>(-1);
   const [error, setError] = useState<string>("");
@@ -45,13 +46,12 @@ function QuizPage({
     showModal: false,
     success: false,
   });
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
 
   // Automatically run the function on the component render
   // TODO: Uncomment the code below to fetch the trivia question
   const generateTriviaQuestion = async () => {
     try {
-      setLoading(true);
       // Gets the openAI API key
       const openAIKey = await context.settings.get("open-ai-api-key");
       if (!openAIKey || typeof openAIKey !== "string") {
@@ -64,25 +64,31 @@ function QuizPage({
       // If the response is not successful, return to the home page
       if (!aiTriviaResponse.success) {
         console.log("Failed to generate new question.");
+        setLoading(false);
         setCurrentPage("home");
         return null;
       }
-      console.log(aiTriviaResponse);
       return aiTriviaResponse;
     } catch (error) {
+      console.log(error);
       setCurrentPage("home");
       return null;
     } finally {
-      setLoading(false);
     }
   };
 
-  // useAsync(generateTriviaQuestion, {
-  //   finally: (data) => {
-  //     if (data) {
-  //       setTriviaQuestion(data);
-  //     }
-  //   },
+  useAsync(generateTriviaQuestion, {
+    finally: (data) => {
+      if (data) {
+        setTriviaQuestion(data);
+        setLoading(false);
+      } else {
+        setCurrentPage("home");
+      }
+    },
+  });
+  // useAsync(async () => {
+  //   return {};
   // });
 
   return (
@@ -114,7 +120,11 @@ function QuizPage({
             alignment="start middle"
             onPress={() => setCurrentPage("home")}
           >
-            <button icon="back-fill" appearance="bordered" />
+            <button
+              icon="back-fill"
+              appearance="bordered"
+              disabled={modal.showModal}
+            />
           </vstack>
           <vstack alignment="top end" width="100%" grow={true}>
             <image
@@ -129,80 +139,82 @@ function QuizPage({
           </vstack>
         </hstack>
 
-        {/* Show loading state or button based on the loading status */}
-        {loading ? (
-          <text>Loading trivia question...</text>
-        ) : (
+        {/* Content area  */}
+        <vstack>
+          <text size="small">{triviaQuestion.question}</text>
+          <spacer size="small" />
           <vstack>
-            <text size="small">{triviaQuestion.question}</text>
-            <spacer size="small" />
-            <vstack>
-              {triviaQuestion.options.map((option, index) => (
-                <text
-                  size="small"
-                  color={
-                    selectedOption === index ? "AlienBlue-400" : "AlienBlue-200"
-                  }
-                  onPress={() => setSelectedOption(index)}
-                >
-                  {index + 1}. {option}
-                </text>
-              ))}
-            </vstack>
-            <spacer size="small" />
-            <vstack>
-              {showHint && <text size="small">{triviaQuestion.hint}</text>}
-              <button onPress={() => setShowHint(!showHint)}>Hint</button>
-            </vstack>
-            <spacer size="small" />
-            <button
-              onPress={async () => {
-                if (selectedOption === -1) {
-                  // When no option has been selected
-                  setError("Please select an option");
-                } else if (selectedOption === triviaQuestion.answer) {
-                  // When correct option has been selected
-                  setModal({ showModal: true, success: true });
-                  const jsonApplicationData = (await context.redis.get(
-                    `application-data`
-                  )) as string;
-                  const applicationData = JSON.parse(
-                    jsonApplicationData
-                  ) as ApplicationData;
-
-                  applicationData["users"][`${context.userId}`]["quizStreak"]++;
-                  await context.redis.set(
-                    `application-data`,
-                    JSON.stringify(applicationData)
-                  );
-                } else {
-                  // When wrong option has been selected
-                  setModal({ showModal: true, success: false });
-                  const jsonApplicationData = (await context.redis.get(
-                    `application-data`
-                  )) as string;
-                  const applicationData = JSON.parse(
-                    jsonApplicationData
-                  ) as ApplicationData;
-
-                  applicationData["users"][`${context.userId}`][
-                    "quizStreak"
-                  ] = 0;
-
-                  await context.redis.set(
-                    `application-data`,
-                    JSON.stringify(applicationData)
-                  );
-                  console.log("Updated the application data");
+            {triviaQuestion.options.map((option, index) => (
+              <text
+                size="small"
+                color={
+                  selectedOption === index ? "AlienBlue-400" : "AlienBlue-200"
                 }
-              }}
-            >
-              Submit
-            </button>
-            <spacer size="small" />
+                onPress={() => setSelectedOption(index)}
+              >
+                {index + 1}. {option}
+              </text>
+            ))}
           </vstack>
-        )}
+          <spacer size="small" />
+          <vstack>
+            {showHint && <text size="small">{triviaQuestion.hint}</text>}
+            <button onPress={() => setShowHint(!showHint)}>Hint</button>
+          </vstack>
+          <spacer size="small" />
+          <button
+            onPress={async () => {
+              if (selectedOption === -1) {
+                // When no option has been selected
+                setError("Please select an option");
+              } else if (selectedOption === triviaQuestion.answer) {
+                // When correct option has been selected
+                setModal({ showModal: true, success: true });
+                const jsonApplicationData = (await context.redis.get(
+                  `application-data`
+                )) as string;
+                const applicationData = JSON.parse(
+                  jsonApplicationData
+                ) as ApplicationData;
+
+                applicationData["users"][`${context.userId}`]["quizStreak"]++;
+                await context.redis.set(
+                  `application-data`,
+                  JSON.stringify(applicationData)
+                );
+                console.log(
+                  "Updated the application data for the correct answer"
+                );
+              } else {
+                // When wrong option has been selected
+                setModal({ showModal: true, success: false });
+                const jsonApplicationData = (await context.redis.get(
+                  `application-data`
+                )) as string;
+                const applicationData = JSON.parse(
+                  jsonApplicationData
+                ) as ApplicationData;
+
+                applicationData["users"][`${context.userId}`]["quizStreak"] = 0;
+
+                await context.redis.set(
+                  `application-data`,
+                  JSON.stringify(applicationData)
+                );
+                console.log(
+                  "Updated the application data for the wrong answer"
+                );
+              }
+            }}
+          >
+            Submit
+          </button>
+          <spacer size="small" />
+        </vstack>
       </vstack>
+
+      {/* Loading overlay */}
+      {loading && <Loading />}
 
       {/* Modal  */}
       {modal.showModal && (
@@ -240,9 +252,18 @@ function QuizPage({
               {modal.success && (
                 <button
                   appearance="secondary"
-                  onPress={() => {
+                  onPress={async () => {
                     // Add logic here if you want to load a new question
                     setSelectedOption(-1);
+                    setLoading(true);
+                    const triviaQuestion =
+                      (await generateTriviaQuestion()) as TriviaQuestion;
+                    setTriviaQuestion(triviaQuestion);
+                    setModal({
+                      showModal: false,
+                      success: false,
+                    });
+                    setLoading(false);
                   }}
                 >
                   Continue
