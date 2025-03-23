@@ -9,6 +9,7 @@ import { getTriviaQuestion } from "../utils/openAI.js";
 import { Loading } from "../components/Loading.js";
 import TriviaOption from "../components/triviaQuestionComponents/TriviaOption.js";
 import TriviaButton from "../components/triviaQuestionComponents/TriviaButton.js";
+import TriviaModal from "../components/triviaQuestionComponents/TriviaModal.js";
 
 const sampleObject = {
   question: 'Which MLB team is known for their iconic "Curse of the Bambino"?',
@@ -45,8 +46,8 @@ function QuizPage({
   const [selectedOption, setSelectedOption] = useState<number>(-1);
   const [error, setError] = useState<string>("");
   const [modal, setModal] = useState<{ showModal: boolean; success: boolean }>({
-    showModal: false,
-    success: false,
+    showModal: true,
+    success: true,
   });
   const [userData, setUserData] = useState<Omit<UserData, "firstVisit">>({
     quizStreak: 0,
@@ -185,11 +186,7 @@ function QuizPage({
             onPress={() => setCurrentPage("home")}
             grow={false}
           >
-            <button
-              icon="back-fill"
-              appearance="destructive"
-              disabled={modal.showModal}
-            />
+            <button icon="back-fill" appearance="destructive" />
           </vstack>
           {/* Header streak count */}
           <vstack alignment="top end" width={"100%"} grow={true}>
@@ -290,7 +287,12 @@ function QuizPage({
                 text={"Submit Answer"}
                 appearance={"primary"}
                 iconName={"checkmark"}
-                onPress={() => console.log("Submit")}
+                onPress={() => {
+                  setModal({
+                    showModal: true,
+                    success: true,
+                  });
+                }}
               />
             </hstack>
           </vstack>
@@ -350,62 +352,12 @@ function QuizPage({
       {loading && <Loading />}
 
       {/* Modal  */}
-      {modal.showModal && (
-        <zstack width="100%" height="100%" alignment="middle center">
-          <vstack
-            padding="large"
-            gap="medium"
-            cornerRadius="medium"
-            border="thin"
-            borderColor="AlienBlue-200"
-            backgroundColor="neutral-background"
-            width="80%"
-            alignment="middle center"
-          >
-            {modal.success && (
-              <text color={"green"} size="xlarge">
-                Correct Answer!
-              </text>
-            )}
-            {!modal.success && (
-              <text color={"red"} size="xlarge">
-                Wrong Answer!
-              </text>
-            )}
-            {modal.success && <text>Your streak has been increased.</text>}
-            {!modal.success && <text>Your streak has been broken</text>}
-            <spacer size="medium" />
-            <hstack gap="medium">
-              <button
-                appearance="primary"
-                onPress={() => setCurrentPage("home")}
-              >
-                Back to Home
-              </button>
-              {modal.success && (
-                <button
-                  appearance="secondary"
-                  onPress={async () => {
-                    // Add logic here if you want to load a new question
-                    setSelectedOption(-1);
-                    setLoading(true);
-                    const triviaQuestion =
-                      (await generateTriviaQuestion()) as TriviaQuestion;
-                    setTriviaQuestion(triviaQuestion);
-                    setModal({
-                      showModal: false,
-                      success: false,
-                    });
-                    setLoading(false);
-                  }}
-                >
-                  Continue
-                </button>
-              )}
-            </hstack>
-          </vstack>
-        </zstack>
-      )}
+      {/* {modal.showModal && ( */}
+      <TriviaModal
+        success={modal.success}
+        answer={triviaQuestion["options"][triviaQuestion.answer]}
+      />
+      {/* )} */}
     </zstack>
   );
 }
