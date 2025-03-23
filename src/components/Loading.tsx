@@ -12,7 +12,7 @@ export const Loading = (): JSX.Element => (
       resizeMode="cover"
     />
     <image
-      url="loader.gif"
+      url="loading/loader.gif"
       description="Loading ..."
       imageHeight={800}
       imageWidth={800}

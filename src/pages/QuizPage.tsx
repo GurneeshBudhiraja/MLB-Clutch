@@ -34,30 +34,29 @@ function QuizPage({
   context: Devvit.Context;
   language: TriviaLanguage;
 }) {
-  // const [triviaQuestion, setTriviaQuestion] = useState<TriviaQuestion>({
-  //   question: "",
-  //   answer: -1,
-  //   options: [],
-  //   success: false,
-  //   hint: "",
-  // });
-  const [triviaQuestion, setTriviaQuestion] =
-    useState<TriviaQuestion>(sampleObject);
+  const [triviaQuestion, setTriviaQuestion] = useState<TriviaQuestion>({
+    question: "",
+    answer: -1,
+    options: [],
+    success: false,
+    hint: "",
+  });
+  // const [triviaQuestion, setTriviaQuestion] =
+  //   useState<TriviaQuestion>(sampleObject);
   const [showHint, setShowHint] = useState<boolean>(false);
   const [selectedOption, setSelectedOption] = useState<number>(-1);
   const [error, setError] = useState<string>("");
   const [modal, setModal] = useState<{ showModal: boolean; success: boolean }>({
-    showModal: true,
-    success: true,
+    showModal: false,
+    success: false,
   });
   const [userData, setUserData] = useState<Omit<UserData, "firstVisit">>({
     quizStreak: 0,
     totalPoints: 0,
   });
 
-  // const [loading, setLoading] = useState<boolean>(true);
   const [loading, setLoading] = useState<boolean>(true);
-  const [questionLoading, setQuestionLoading] = useState<boolean>(true);
+  const [questionLoading, setQuestionLoading] = useState<boolean>(false);
 
   // Automatically run the function on the component render
   // TODO: Uncomment the code below to fetch the trivia question
@@ -66,21 +65,17 @@ function QuizPage({
       // Gets the openAI API key
       const openAIKey = await context.settings.get("open-ai-api-key");
       if (!openAIKey || typeof openAIKey !== "string") {
-        console.log("OpenAI API key missing or not a string");
-        setCurrentPage("home");
-        return null;
+        throw new Error("OpenAI API key missing or not a string");
       }
       // Fetches the trivia question
       const aiTriviaResponse = await getTriviaQuestion(openAIKey, language);
       // If the response is not successful, return to the home page
       if (!aiTriviaResponse.success) {
-        console.log("Failed to generate new question.");
-        setLoading(false);
-        setCurrentPage("home");
-        return null;
+        throw new Error("Failed to generate trivia question");
       }
       return aiTriviaResponse;
     } catch (error) {
+      console.log("Error in `QuizPage.tsx` generateTriviaQuestion");
       console.log(error);
       setCurrentPage("home");
       return null;
@@ -88,24 +83,17 @@ function QuizPage({
     }
   };
 
-  // useAsync(generateTriviaQuestion, {
-  //   finally: (data) => {
-  //     if (data) {
-  //       setTriviaQuestion(data);
-  //       setLoading(false);
-  //     } else {
-  //       setCurrentPage("home");
-  //     }
-  //   },
-  // });
-  // useAsync(async () => {
-  //   return {};
-  // });
-
   useAsync(
     async () => {
       console.log("This is working");
       try {
+        console.log("Generating a triviaquestion");
+        const triviaQuestion = await generateTriviaQuestion();
+        console.log("Generated a triviaquestion");
+        if (!triviaQuestion) {
+          throw new Error("Trivia question is undefined");
+        }
+
         const userId = String(context.userId);
 
         // Gets application-data from Redis
@@ -123,8 +111,11 @@ function QuizPage({
           throw new Error("No user data found in quiz page");
         }
 
-        // Return the data instead of setting state directly
+        /**
+         * Return the data for the `finally` function to update the state
+         */
         return {
+          generatedQuestion: triviaQuestion,
           quizStreak: userData.quizStreak,
           totalPoints: userData.totalPoints,
         };
@@ -138,10 +129,21 @@ function QuizPage({
       }
     },
     {
-      // Set the state after the async operation
       finally: (data) => {
+        /**
+         * Checks the truthiness of the data and update the states using the data object
+         */
         if (data) {
-          setUserData(data);
+          const {
+            generatedQuestion: triviaQuestion,
+            quizStreak,
+            totalPoints,
+          } = data;
+          setTriviaQuestion(triviaQuestion);
+          setUserData({
+            quizStreak,
+            totalPoints,
+          });
         }
         setLoading(false);
       },
@@ -354,18 +356,17 @@ function QuizPage({
       {loading && <Loading />}
 
       {/* Modal  */}
-      {/* {modal.showModal && ( */}
-      {questionLoading ? (
-        <LoadingModal />
-      ) : (
-        <TriviaModal
-          streak={userData.quizStreak}
-          setCurrentPage={setCurrentPage}
-          success={modal.success}
-          answer={triviaQuestion["options"][triviaQuestion.answer]}
-        />
-      )}
-      {/* )} */}
+      {modal.showModal &&
+        (questionLoading ? (
+          <LoadingModal />
+        ) : (
+          <TriviaModal
+            streak={userData.quizStreak}
+            setCurrentPage={setCurrentPage}
+            success={modal.success}
+            answer={triviaQuestion["options"][triviaQuestion.answer]}
+          />
+        ))}
     </zstack>
   );
 }
