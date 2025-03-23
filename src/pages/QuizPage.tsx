@@ -7,6 +7,8 @@ import {
 } from "@devvit/public-api";
 import { getTriviaQuestion } from "../utils/openAI.js";
 import { Loading } from "../components/Loading.js";
+import TriviaOption from "../components/triviaQuestionComponents/TriviaOption.js";
+import TriviaButton from "../components/triviaQuestionComponents/TriviaButton.js";
 
 const sampleObject = {
   question: 'Which MLB team is known for their iconic "Curse of the Bambino"?',
@@ -30,15 +32,15 @@ function QuizPage({
   context: Devvit.Context;
   language: TriviaLanguage;
 }) {
-  const [triviaQuestion, setTriviaQuestion] = useState<TriviaQuestion>({
-    question: "",
-    answer: -1,
-    options: [],
-    success: false,
-    hint: "",
-  });
-  // const [triviaQuestion, setTriviaQuestion] =
-  //   useState<TriviaQuestion>(sampleObject);
+  // const [triviaQuestion, setTriviaQuestion] = useState<TriviaQuestion>({
+  //   question: "",
+  //   answer: -1,
+  //   options: [],
+  //   success: false,
+  //   hint: "",
+  // });
+  const [triviaQuestion, setTriviaQuestion] =
+    useState<TriviaQuestion>(sampleObject);
   const [showHint, setShowHint] = useState<boolean>(false);
   const [selectedOption, setSelectedOption] = useState<number>(-1);
   const [error, setError] = useState<string>("");
@@ -46,6 +48,12 @@ function QuizPage({
     showModal: false,
     success: false,
   });
+  const [userData, setUserData] = useState<Omit<UserData, "firstVisit">>({
+    quizStreak: 0,
+    totalPoints: 0,
+  });
+
+  // const [loading, setLoading] = useState<boolean>(true);
   const [loading, setLoading] = useState<boolean>(true);
 
   // Automatically run the function on the component render
@@ -77,19 +85,74 @@ function QuizPage({
     }
   };
 
-  useAsync(generateTriviaQuestion, {
-    finally: (data) => {
-      if (data) {
-        setTriviaQuestion(data);
-        setLoading(false);
-      } else {
-        setCurrentPage("home");
-      }
-    },
-  });
+  // useAsync(generateTriviaQuestion, {
+  //   finally: (data) => {
+  //     if (data) {
+  //       setTriviaQuestion(data);
+  //       setLoading(false);
+  //     } else {
+  //       setCurrentPage("home");
+  //     }
+  //   },
+  // });
   // useAsync(async () => {
   //   return {};
   // });
+
+  useAsync(
+    async () => {
+      console.log("This is working");
+      try {
+        const userId = String(context.userId);
+
+        // Gets application-data from Redis
+        const jsonApplicationData = await context.redis.get("application-data");
+        if (!jsonApplicationData) {
+          throw new Error("No application data found in quiz page");
+        }
+
+        const applicationData = JSON.parse(
+          jsonApplicationData
+        ) as ApplicationData;
+        const { users } = applicationData;
+        const userData = users[userId];
+        if (!userData) {
+          throw new Error("No user data found in quiz page");
+        }
+
+        // Return the data instead of setting state directly
+        return {
+          quizStreak: userData.quizStreak,
+          totalPoints: userData.totalPoints,
+        };
+      } catch (error) {
+        console.log(
+          "No application data found in quiz page. Please reinstall the application"
+        );
+        console.log(error);
+        setCurrentPage("home");
+        throw error;
+      }
+    },
+    {
+      // Set the state after the async operation
+      finally: (data) => {
+        if (data) {
+          setUserData(data);
+        }
+        setLoading(false);
+      },
+    }
+  );
+
+  const hintForm = useForm(
+    {
+      fields: [],
+      title: "💡 Trivia Hint",
+      description: triviaQuestion.hint,
+    },
+    (values) => {}
+  );
 
   return (
     <zstack width="100%" height="100%" grow={true}>
@@ -103,7 +166,7 @@ function QuizPage({
         height="100%"
         resizeMode="cover"
       />
-      {/* Vertical stack for the main menu */}
+      {/* Vertical stack for the page content */}
       <vstack
         padding="medium"
         gap="medium"
@@ -114,54 +177,124 @@ function QuizPage({
         borderColor="CoolGray-100"
         cornerRadius="medium"
       >
-        {/* Leaderboard icon and back icon */}
+        {/* Back button and current streak */}
         <hstack alignment="top" width="100%" grow={false} gap="large">
+          {/* Header back button */}
           <vstack
             alignment="start middle"
             onPress={() => setCurrentPage("home")}
+            grow={false}
           >
             <button
               icon="back-fill"
-              appearance="bordered"
+              appearance="destructive"
               disabled={modal.showModal}
             />
           </vstack>
-          <vstack alignment="top end" width="100%" grow={true}>
-            <image
-              url="leaderboard-icon.jpeg"
-              description="Leaderboard"
-              imageHeight={100}
-              imageWidth={100}
-              width="60px"
-              height="60px"
-              resizeMode="scale-down"
-            />
+          {/* Header streak count */}
+          <vstack alignment="top end" width={"100%"} grow={true}>
+            <hstack
+              padding="small"
+              alignment="middle center"
+              backgroundColor="#002D72"
+              cornerRadius="medium"
+              border="thin"
+              borderColor="white"
+            >
+              <image
+                imageHeight={"20px"}
+                imageWidth={"20px"}
+                height={"20px"}
+                url="fire-flame.gif"
+              />
+              <text size="medium">Current Streak</text>
+              <spacer size="xsmall" />
+              <vstack
+                width="24px"
+                height="24px"
+                cornerRadius="full"
+                backgroundColor="#D50032"
+                alignment="middle center"
+              >
+                <text weight="bold" color={"white"}>
+                  {userData.quizStreak}
+                </text>
+              </vstack>
+              <text size="xlarge" color="Red-100" weight="bold"></text>
+            </hstack>
           </vstack>
         </hstack>
 
-        {/* Content area  */}
         <vstack>
-          <text size="small">{triviaQuestion.question}</text>
-          <spacer size="small" />
-          <vstack>
-            {triviaQuestion.options.map((option, index) => (
-              <text
-                size="small"
-                color={
-                  selectedOption === index ? "AlienBlue-400" : "AlienBlue-200"
-                }
-                onPress={() => setSelectedOption(index)}
-              >
-                {index + 1}. {option}
+          {/* Question stack */}
+          <vstack
+            padding="medium"
+            backgroundColor="Red-600"
+            cornerRadius="medium"
+            border="thin"
+            borderColor="white"
+          >
+            <hstack alignment="middle center" gap="small">
+              <icon name="predictions-fill" />
+              <text size="small" color="CoolGray-200" weight="bold">
+                TRIVIA QUESTION
               </text>
+            </hstack>
+            <spacer size="small" />
+            <text
+              size="large"
+              weight="bold"
+              color="white"
+              alignment="center middle"
+              wrap
+            >
+              {triviaQuestion.question}
+            </text>
+          </vstack>
+
+          <spacer size="small" />
+
+          {/* Options stack */}
+          <vstack
+            padding="medium"
+            gap="small"
+            backgroundColor="white"
+            cornerRadius="medium"
+            border="thin"
+            borderColor="#D50032"
+          >
+            {triviaQuestion.options.map((option, index) => (
+              <TriviaOption
+                index={index}
+                option={option}
+                selectedOption={selectedOption}
+                setSelectedOption={setSelectedOption}
+              />
             ))}
           </vstack>
+
           <spacer size="small" />
-          <vstack>
-            {showHint && <text size="small">{triviaQuestion.hint}</text>}
-            <button onPress={() => setShowHint(!showHint)}>Hint</button>
+
+          {/* Show hint button and submit button */}
+          <vstack gap="medium" padding="medium" alignment="end">
+            <hstack gap="medium">
+              <TriviaButton
+                text="Show Hint"
+                appearance={"bordered"}
+                iconName={showHint ? "topic-help" : "topic-help-fill"}
+                onPress={() => {
+                  context.ui.showForm(hintForm);
+                }}
+              />
+              <TriviaButton
+                text={"Submit Answer"}
+                appearance={"primary"}
+                iconName={"checkmark"}
+                onPress={() => console.log("Submit")}
+              />
+            </hstack>
           </vstack>
-          <spacer size="small" />
+          {/* <spacer size="small" />
           <button
             onPress={async () => {
               if (selectedOption === -1) {
@@ -209,7 +342,7 @@ function QuizPage({
           >
             Submit
           </button>
-          <spacer size="small" />
+          <spacer size="small" /> */}
         </vstack>
       </vstack>
 

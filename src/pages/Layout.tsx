@@ -72,8 +72,9 @@ function Layout({ context }: { context: Devvit.Context }) {
       const currentUserInfo = users[`${context.userId}`];
       if (!currentUserInfo) {
         applicationData["users"][`${context.userId}`] = {
-          ...applicationData["users"][`${context.userId}`],
           quizStreak: 0,
+          totalPoints: 0,
+          firstVisit: true,
         };
         setUserRedisData(applicationData["users"]);
         await context.redis.set(
@@ -81,10 +82,15 @@ function Layout({ context }: { context: Devvit.Context }) {
           JSON.stringify(applicationData)
         );
       } else {
+        applicationData["users"][`${context.userId}`]["firstVisit"] = false;
         setUserRedisData(applicationData["users"]);
+        await context.redis.set(
+          "application-data",
+          JSON.stringify(applicationData)
+        );
       }
     } catch (error: any) {
-      console.log(error);
+      console.log("Error in Layout.tsx useAsync hook");
       context.ui.showToast(
         error.message ?? "Something went wrong. Please try again later."
       );
@@ -105,27 +111,39 @@ function Layout({ context }: { context: Devvit.Context }) {
     case "home":
     default:
       return (
-        <hstack>
-          <button
-            onPress={async (data) => {
-              console.log(data);
-              const applicationDataJson = await context.redis.get(
-                "application-data"
-              );
-              console.log("application-data is:");
-              console.log(applicationDataJson);
-            }}
-          >
-            check question of the day and user data
-          </button>
-          <button
-            onPress={() => {
-              context.ui.showForm(quizSettingsForm);
-            }}
-          >
-            Ultimate Streak Mode
-          </button>
-        </hstack>
+        <zstack width="100%" height="100%" grow={true}>
+          <image
+            url="background.jpeg"
+            description="Background Image"
+            imageHeight={800}
+            imageWidth={800}
+            width="100%"
+            height="100%"
+            resizeMode="cover"
+          />
+          <hstack>
+            <button
+              onPress={async (data) => {
+                const applicationDataJson = await context.redis.get(
+                  "application-data"
+                );
+                console.log("application-data is:");
+                console.log(applicationDataJson);
+              }}
+            >
+              Check redis data
+            </button>
+            <button
+              onPress={() => {
+                setCurrentPage("quiz");
+                // TODO: uncomment below in production
+                // context.ui.showForm(quizSettingsForm);
+              }}
+            >
+              Ultimate Streak Mode
+            </button>
+          </hstack>
+        </zstack>
       );
   }
 }

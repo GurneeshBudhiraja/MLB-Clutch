@@ -1,5 +1,6 @@
 
-type CurrentPageType = "home" | "quiz" | "redditOfTheDay";
+
+type CurrentPageType = "home" | "quiz" | "redditOfTheDay" | "leaderboard";
 
 type TriviaLanguage = "english" | "spanish" | "japanese"
 
@@ -19,8 +20,26 @@ type TriviaQuestion = {
 
 
 type ApplicationData = {
-  jobId: string;
-  qotd: TriviaQuestion;
   // Objects inside object
   users: Record<string, Record<string, any>>
+}
+
+type UserData = {
+  quizStreak: number;
+  totalPoints: number;
+  firstVisit: boolean;
+}
+
+type TriviaOptionProps = {
+  index: number;
+  setSelectedOption: StateSetter<number>;
+  selectedOption: number;
+  option: string;
+}
+
+type TriviaButtonProps = {
+  iconName: IconName;
+  appearance: Devvit.Blocks.ButtonAppearance;
+  onPress?: Devvit.Blocks.OnPressEventHandler;
+  text: string;
 }
