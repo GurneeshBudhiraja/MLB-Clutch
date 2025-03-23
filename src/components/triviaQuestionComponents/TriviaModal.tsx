@@ -1,11 +1,15 @@
-import { Devvit } from "@devvit/public-api";
+import { Devvit, StateSetter, useState } from "@devvit/public-api";
 
 function TriviaModal({
+  setCurrentPage,
   success,
   answer,
+  streak, // current streak before updating
 }: {
+  setCurrentPage: StateSetter<CurrentPageType>;
   success: boolean;
   answer: string;
+  streak: number;
 }) {
   return (
     <zstack
@@ -16,12 +20,13 @@ function TriviaModal({
     >
       <hstack
         width="80%"
-        height={success ? "40%" : "50%"}
+        height="50%"
         cornerRadius="medium"
         backgroundColor="neutral-background"
         border="thin"
         borderColor="white"
       >
+        {/* Your existing code remains unchanged here */}
         <zstack width="40%" alignment="middle center" backgroundColor="#f8f8f8">
           <image
             url={
@@ -62,6 +67,33 @@ function TriviaModal({
               : "Sorry, that's not the right answer."}
           </text>
 
+          {/* Add streak information ONLY for success case */}
+          {success && (
+            <vstack
+              padding="medium"
+              backgroundColor="#4CAF50"
+              cornerRadius="small"
+              gap="small"
+              width="90%"
+              alignment="middle center"
+            >
+              <hstack gap="small" alignment="center">
+                <image
+                  imageHeight={"20px"}
+                  imageWidth={"20px"}
+                  height={"20px"}
+                  url="fire-flame.gif"
+                />
+                <text weight="bold" color="white" style="heading">
+                  Streak Updated!
+                </text>
+              </hstack>
+              <text color="white">
+                You're now on a {streak + 1}-answer streak!
+              </text>
+            </vstack>
+          )}
+
           {!success && (
             <vstack
               padding="medium"
@@ -86,18 +118,26 @@ function TriviaModal({
 
           {success ? (
             <hstack gap="medium" alignment="center">
-              <button appearance="bordered" onPress={() => {}} icon="home-fill">
+              <button
+                appearance="bordered"
+                onPress={() => {
+                  setCurrentPage("home");
+                }}
+                icon="home-fill"
+              >
                 Home
               </button>
               <button appearance="primary" onPress={() => {}}>
-                Next Question
+                Keep Going!
               </button>
             </hstack>
           ) : (
             <button
               appearance="bordered"
               textColor="white"
-              onPress={() => {}}
+              onPress={() => {
+                setCurrentPage("home");
+              }}
               icon="home-fill"
             >
               Back to Home

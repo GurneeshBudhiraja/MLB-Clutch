@@ -10,6 +10,7 @@ import { Loading } from "../components/Loading.js";
 import TriviaOption from "../components/triviaQuestionComponents/TriviaOption.js";
 import TriviaButton from "../components/triviaQuestionComponents/TriviaButton.js";
 import TriviaModal from "../components/triviaQuestionComponents/TriviaModal.js";
+import LoadingModal from "../components/LoadingModal.js";
 
 const sampleObject = {
   question: 'Which MLB team is known for their iconic "Curse of the Bambino"?',
@@ -56,6 +57,7 @@ function QuizPage({
 
   // const [loading, setLoading] = useState<boolean>(true);
   const [loading, setLoading] = useState<boolean>(true);
+  const [questionLoading, setQuestionLoading] = useState<boolean>(true);
 
   // Automatically run the function on the component render
   // TODO: Uncomment the code below to fetch the trivia question
@@ -353,10 +355,16 @@ function QuizPage({
 
       {/* Modal  */}
       {/* {modal.showModal && ( */}
-      <TriviaModal
-        success={modal.success}
-        answer={triviaQuestion["options"][triviaQuestion.answer]}
-      />
+      {questionLoading ? (
+        <LoadingModal />
+      ) : (
+        <TriviaModal
+          streak={userData.quizStreak}
+          setCurrentPage={setCurrentPage}
+          success={modal.success}
+          answer={triviaQuestion["options"][triviaQuestion.answer]}
+        />
+      )}
       {/* )} */}
     </zstack>
   );
