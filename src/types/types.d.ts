@@ -43,3 +43,5 @@ type TriviaButtonProps = {
   onPress?: Devvit.Blocks.OnPressEventHandler;
   text: string;
 }
+
+type RedisKey = "application-data"

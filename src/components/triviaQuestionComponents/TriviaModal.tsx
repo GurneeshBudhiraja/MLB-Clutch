@@ -2,11 +2,13 @@ import { Devvit, StateSetter, useState } from "@devvit/public-api";
 
 function TriviaModal({
   setCurrentPage,
+  setQuestionLoading,
   success,
   answer,
-  streak, // current streak before updating
+  streak, // streak after it has been updated
 }: {
   setCurrentPage: StateSetter<CurrentPageType>;
+  setQuestionLoading: StateSetter<boolean>;
   success: boolean;
   answer: string;
   streak: number;
@@ -29,10 +31,19 @@ function TriviaModal({
         {/* Your existing code remains unchanged here */}
         <zstack width="40%" alignment="middle center" backgroundColor="#f8f8f8">
           <image
+            // url={
+            //   success
+            //     ? `success/success${Math.floor(Math.random() * 5)}.gif`
+            //     : `fails/fail${Math.floor(Math.random() * 5)}.gif`
+            // }
             url={
               success
-                ? `success/success${Math.floor(Math.random() * 5)}.gif`
-                : `fails/fail${Math.floor(Math.random() * 5)}.gif`
+                ? /**
+                   * Gets the last digit from the Date.now()
+                   * Reduce it to the range of 0-4
+                   */
+                  `success/success${(Date.now() % 10) % 5}.gif`
+                : `fails/fail${(Date.now() % 10) % 5}.gif`
             }
             imageHeight={200}
             imageWidth={200}
@@ -88,9 +99,7 @@ function TriviaModal({
                   Streak Updated!
                 </text>
               </hstack>
-              <text color="white">
-                You're now on a {streak + 1}-answer streak!
-              </text>
+              <text color="white">You're now on a {streak}-answer streak!</text>
             </vstack>
           )}
 
@@ -127,7 +136,15 @@ function TriviaModal({
               >
                 Home
               </button>
-              <button appearance="primary" onPress={() => {}}>
+              <button
+                appearance="primary"
+                onPress={() => {
+                  setQuestionLoading(true);
+                  /**
+                   * TODO: add the feature to fetch the new question based on the langauge and then update the trivia question state. Then, update the state of the questionLoading to false.
+                   * */
+                }}
+              >
                 Keep Going!
               </button>
             </hstack>

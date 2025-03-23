@@ -135,9 +135,8 @@ function Layout({ context }: { context: Devvit.Context }) {
             </button>
             <button
               onPress={() => {
-                setCurrentPage("quiz");
                 // TODO: uncomment below in production
-                // context.ui.showForm(quizSettingsForm);
+                context.ui.showForm(quizSettingsForm);
               }}
             >
               Ultimate Streak Mode

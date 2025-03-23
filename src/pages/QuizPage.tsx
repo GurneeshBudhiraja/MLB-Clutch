@@ -11,6 +11,11 @@ import TriviaOption from "../components/triviaQuestionComponents/TriviaOption.js
 import TriviaButton from "../components/triviaQuestionComponents/TriviaButton.js";
 import TriviaModal from "../components/triviaQuestionComponents/TriviaModal.js";
 import LoadingModal from "../components/LoadingModal.js";
+import {
+  evaluateQuestion,
+  getRedisData,
+  updateRedisData,
+} from "../utils/utils.js";
 
 const sampleObject = {
   question: 'Which MLB team is known for their iconic "Curse of the Bambino"?',
@@ -50,7 +55,10 @@ function QuizPage({
     showModal: false,
     success: false,
   });
-  const [userData, setUserData] = useState<Omit<UserData, "firstVisit">>({
+  const [userData, setUserData] = useState<
+    Omit<UserData, "firstVisit"> & { userId: string }
+  >({
+    userId: "",
     quizStreak: 0,
     totalPoints: 0,
   });
@@ -89,6 +97,7 @@ function QuizPage({
       try {
         console.log("Generating a triviaquestion");
         const triviaQuestion = await generateTriviaQuestion();
+        // const triviaQuestion = sampleObject;
         console.log("Generated a triviaquestion");
         if (!triviaQuestion) {
           throw new Error("Trivia question is undefined");
@@ -129,11 +138,12 @@ function QuizPage({
       }
     },
     {
-      finally: (data) => {
+      finally: async (data) => {
         /**
          * Checks the truthiness of the data and update the states using the data object
          */
         if (data) {
+          const userId = String(context.userId);
           const {
             generatedQuestion: triviaQuestion,
             quizStreak,
@@ -141,6 +151,8 @@ function QuizPage({
           } = data;
           setTriviaQuestion(triviaQuestion);
           setUserData({
+            ...userData,
+            userId,
             quizStreak,
             totalPoints,
           });
@@ -150,11 +162,22 @@ function QuizPage({
     }
   );
 
+  // Form to display the hint
   const hintForm = useForm(
     {
       fields: [],
       title: "💡 Trivia Hint",
       description: triviaQuestion.hint,
+    },
+    (values) => {}
+  );
+
+  // Form to inform the user when no choice has been selected
+  const noOptionSelectedForm = useForm(
+    {
+      fields: [],
+      title: "⚠️ No Answer Selected",
+      description: "Please select an option before submitting your answer.",
     },
     (values) => {}
   );
@@ -276,9 +299,9 @@ function QuizPage({
 
           <spacer size="small" />
 
-          {/* Show hint button and submit button */}
           <vstack gap="medium" padding="medium" alignment="end">
             <hstack gap="medium">
+              {/* Hint button */}
               <TriviaButton
                 text="Show Hint"
                 appearance={"bordered"}
@@ -287,68 +310,111 @@ function QuizPage({
                   context.ui.showForm(hintForm);
                 }}
               />
+              {/* Submit button */}
               <TriviaButton
                 text={"Submit Answer"}
                 appearance={"primary"}
                 iconName={"checkmark"}
-                onPress={() => {
-                  setModal({
-                    showModal: true,
-                    success: true,
-                  });
+                onPress={async () => {
+                  const evaluation = evaluateQuestion(
+                    triviaQuestion,
+                    selectedOption
+                  );
+                  if (evaluation === "no-option-selected") {
+                    context.ui.showForm(noOptionSelectedForm);
+                  } else if (evaluation === "correct") {
+                    /**
+                     * When the answer is correct
+                     */
+                    try {
+                      const newUserData = {
+                        ...userData,
+                        quizStreak: userData.quizStreak + 1,
+                      };
+                      setUserData(newUserData);
+                      setModal({
+                        ...modal,
+                        showModal: true,
+                        success: true,
+                      });
+
+                      // UserId of the current user
+                      const { userId } = userData;
+
+                      // Gets the old Redis data
+                      console.log("Getting the current Redis data");
+                      const currentRedisData = await getRedisData(
+                        context,
+                        "application-data"
+                      );
+
+                      // Checks the truthiness and type of currentRedisData
+                      if (
+                        !currentRedisData ||
+                        typeof currentRedisData === "boolean"
+                      ) {
+                        context.ui.showToast(
+                          "Please reinstall the application"
+                        );
+                        // Rollback the modal and userData state
+                        const newUserData = {
+                          ...userData,
+                          quizStreak: userData.quizStreak - 1,
+                        };
+                        setUserData(newUserData);
+                        setModal({
+                          ...modal,
+                          showModal: false,
+                          success: false,
+                        });
+                        throw new Error("No redis data found");
+                      }
+
+                      console.log("Current Redis data:");
+                      console.log(currentRedisData);
+                      console.log("=======================");
+
+                      // Updating the currentRedisData object
+                      currentRedisData["users"][userId]["quizStreak"] =
+                        newUserData.quizStreak;
+
+                      // Uses the util function to update the Redis storage.
+                      console.log("Updating the redis data");
+                      const updateRedisDataResponse = await updateRedisData(
+                        context,
+                        "application-data",
+                        currentRedisData
+                      );
+                      if (!updateRedisDataResponse) {
+                        // Rollback the modal and userData state
+                        const newUserData = {
+                          ...userData,
+                          quizStreak: userData.quizStreak - 1,
+                        };
+                        setUserData(newUserData);
+                        setModal({
+                          ...modal,
+                          showModal: false,
+                          success: false,
+                        });
+                        context.ui.showToast(
+                          "Unable to update data. Please try again later."
+                        );
+                        throw new Error("Failed to update the redis data");
+                      }
+                      console.log("Updated the redis data");
+                    } catch (error) {
+                      console.log("Error in correct answer ");
+                      console.log(error);
+                    } finally {
+                      // Resetting the option value selected
+                      setSelectedOption(-1);
+                    }
+                  }
                 }}
               />
             </hstack>
           </vstack>
-          {/* <spacer size="small" />
-          <button
-            onPress={async () => {
-              if (selectedOption === -1) {
-                // When no option has been selected
-                setError("Please select an option");
-              } else if (selectedOption === triviaQuestion.answer) {
-                // When correct option has been selected
-                setModal({ showModal: true, success: true });
-                const jsonApplicationData = (await context.redis.get(
-                  `application-data`
-                )) as string;
-                const applicationData = JSON.parse(
-                  jsonApplicationData
-                ) as ApplicationData;
-
-                applicationData["users"][`${context.userId}`]["quizStreak"]++;
-                await context.redis.set(
-                  `application-data`,
-                  JSON.stringify(applicationData)
-                );
-                console.log(
-                  "Updated the application data for the correct answer"
-                );
-              } else {
-                // When wrong option has been selected
-                setModal({ showModal: true, success: false });
-                const jsonApplicationData = (await context.redis.get(
-                  `application-data`
-                )) as string;
-                const applicationData = JSON.parse(
-                  jsonApplicationData
-                ) as ApplicationData;
-
-                applicationData["users"][`${context.userId}`]["quizStreak"] = 0;
-
-                await context.redis.set(
-                  `application-data`,
-                  JSON.stringify(applicationData)
-                );
-                console.log(
-                  "Updated the application data for the wrong answer"
-                );
-              }
-            }}
-          >
-            Submit
-          </button>
-          <spacer size="small" /> */}
         </vstack>
       </vstack>
 
@@ -361,6 +427,7 @@ function QuizPage({
           <LoadingModal />
         ) : (
           <TriviaModal
+            setQuestionLoading={setQuestionLoading}
             streak={userData.quizStreak}
             setCurrentPage={setCurrentPage}
             success={modal.success}
