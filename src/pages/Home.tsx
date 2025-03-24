@@ -1,5 +1,6 @@
 import { Devvit, FormKey, useState } from "@devvit/public-api";
 import LeaderBoard from "../components/LeaderBoard.js";
+import { getTriviaQuestion } from "../utils/openAI.js";
 
 function Home({
   context,
@@ -62,7 +63,6 @@ function Home({
           >
             ULTIMATE STREAK MODE
           </button>
-
           <button
             appearance="bordered"
             textColor="white"

@@ -58,19 +58,17 @@ function QuizPage({
     success: false,
   });
   const [userData, setUserData] = useState<
-    Omit<UserData, "firstVisit"> & { userId: string }
+    Omit<UserData, "firstVisit" | "totalPoints"> & { userId: string }
   >({
     userId: "",
     quizStreak: 0,
-    totalPoints: 0,
   });
 
-  const [loading, setLoading] = useState<boolean>(true);
   const [questionLoading, setQuestionLoading] = useState<boolean>(false);
+  const [keepGoing, setKeepGoing] = useState<boolean>(false);
 
   // Automatically run the function on the component render
-  // TODO: Uncomment the code below to fetch the trivia question
-  const generateTriviaQuestion = async (fromButton?: "keepGoing") => {
+  const generateTriviaQuestion = async () => {
     try {
       // Gets the openAI API key
       const openAIKey = await context.settings.get("open-ai-api-key");
@@ -93,7 +91,7 @@ function QuizPage({
     }
   };
 
-  useAsync(
+  const { loading } = useAsync(
     async () => {
       console.log("This is working");
       try {
@@ -128,7 +126,6 @@ function QuizPage({
         return {
           generatedQuestion: triviaQuestion,
           quizStreak: userData.quizStreak,
-          totalPoints: userData.totalPoints,
         };
       } catch (error) {
         console.log(
@@ -140,27 +137,21 @@ function QuizPage({
       }
     },
     {
-      depends: [],
+      depends: [keepGoing],
       finally: async (data) => {
         /**
          * Checks the truthiness of the data and update the states using the data object
          */
         if (data) {
           const userId = String(context.userId);
-          const {
-            generatedQuestion: triviaQuestion,
-            quizStreak,
-            totalPoints,
-          } = data;
+          const { generatedQuestion: triviaQuestion, quizStreak } = data;
           setTriviaQuestion(triviaQuestion);
           setUserData({
             ...userData,
             userId,
             quizStreak,
-            totalPoints,
           });
         }
-        setLoading(false);
       },
     }
   );
@@ -185,28 +176,6 @@ function QuizPage({
     (values) => {}
   );
 
-  // async function keepGoingHandler() {
-  //   try {
-  //     console.log("Working");
-  //     // Gets the open ai key
-  //     const triviaQuestion = await generateTriviaQuestion();
-  //     console.log("Trivia question in TriviaModal is: ");
-  //     console.log(triviaQuestion);
-  //     if (!triviaQuestion) {
-  //       context.ui.showToast("Failed to generate new question.");
-  //       throw new Error("Failed to generate new question");
-  //     }
-  //     setTriviaQuestion({ ...triviaQuestion });
-  //     setModal({
-  //       showModal: false,
-  //       success: false,
-  //     });
-  //     setQuestionLoading(false);
-  //   } catch (error) {
-  //     setCurrentPage("home");
-  //   } finally {
-  //   }
-  // }
   return (
     <zstack width="100%" height="100%" grow={true}>
       {/* Background image */}
@@ -396,6 +365,8 @@ function QuizPage({
                       // Updating the currentRedisData object
                       currentRedisData["users"][userId]["quizStreak"] =
                         newUserData.quizStreak;
+                      currentRedisData["users"][userId]["progress"] =
+                        "positive";
 
                       // Uses the util function to update the Redis storage.
                       console.log("Updating the redis data");
@@ -434,7 +405,7 @@ function QuizPage({
                     try {
                       const newUserData = {
                         ...userData,
-                        quizStreak: 0,
+                        quizStreak: userData.quizStreak - 1,
                       };
 
                       setModal({
@@ -477,7 +448,9 @@ function QuizPage({
                       console.log("=======================");
 
                       // Updating the currentRedisData object
-                      currentRedisData["users"][userId]["quizStreak"] = 0;
+                      currentRedisData["users"][userId]["quizStreak"] -= 1;
+                      currentRedisData["users"][userId]["progress"] =
+                        "negative";
 
                       // Uses the util function to update the Redis storage.
                       console.log("Updating the redis data");
@@ -519,23 +492,6 @@ function QuizPage({
       {loading && <Loading />}
 
       {/* Modal  */}
-      {/* {modal.showModal &&
-        (questionLoading ? (
-          <LoadingModal />
-        ) : (
-          <TriviaModal
-            keepGoingHandler={keepGoingHandler}
-            setTriviaQuestion={setTriviaQuestion}
-            language={language}
-            context={context}
-            setModal={setModal}
-            setQuestionLoading={setQuestionLoading}
-            streak={userData.quizStreak}
-            setCurrentPage={setCurrentPage}
-            success={modal.success}
-            answer={triviaQuestion["options"][triviaQuestion.answer]}
-          />
-        ))} */}
       {modal.showModal &&
         (questionLoading ? (
           <LoadingModal />
@@ -650,51 +606,35 @@ function QuizPage({
                         {triviaQuestion["options"][triviaQuestion["answer"]]}
                       </text>
                     </hstack>
-
-                    <hstack gap="small" alignment="middle start">
-                      {/* <icon name="" color="white" size="small" /> */}
-                      <text color="white">Your streak has been reset to 0</text>
-                    </hstack>
+                    <text>
+                      You're now on a {userData.quizStreak}-answer streak!
+                    </text>
                   </vstack>
                 )}
 
-                {modal.success ? (
-                  <hstack gap="medium" alignment="center">
-                    <button
-                      appearance="bordered"
-                      onPress={() => {
-                        setCurrentPage("home");
-                      }}
-                      icon="home-fill"
-                    >
-                      Home
-                    </button>
-                    <button
-                      appearance="primary"
-                      onPress={async () => {
-                        setModal({
-                          showModal: false,
-                          success: false,
-                        });
-                        setLoading(true);
-                        setCurrentPage("quiz");
-                      }}
-                    >
-                      Keep Going!
-                    </button>
-                  </hstack>
-                ) : (
+                <hstack gap="medium" alignment="center">
                   <button
                     appearance="bordered"
-                    textColor="white"
                     onPress={() => {
                       setCurrentPage("home");
                     }}
                     icon="home-fill"
                   >
-                    Back to Home
+                    Home
                   </button>
-                )}
+                  <button
+                    appearance="primary"
+                    onPress={async () => {
+                      setModal({
+                        showModal: false,
+                        success: false,
+                      });
+                      setKeepGoing(!keepGoing);
+                    }}
+                  >
+                    Keep Going!
+                  </button>
+                </hstack>
               </vstack>
             </hstack>
           </zstack>
