@@ -14,8 +14,6 @@ function Layout({ context }: { context: Devvit.Context }) {
     language: "english",
   });
 
-  const [userRedisData, setUserRedisData] = useState<Record<string, any>>({});
-
   const quizSettingsForm = useForm(
     {
       title: "Quiz Settings",
@@ -55,51 +53,6 @@ function Layout({ context }: { context: Devvit.Context }) {
       setCurrentPage("quiz");
     }
   );
-
-  // useAsync(async () => {
-  //   try {
-  //     const applicationDataJSON = await context.redis.get("application-data");
-
-  //     // Checks if the application-data exists in the Redis storage
-  //     if (!applicationDataJSON) {
-  //       throw new Error(
-  //         "Something went wrong. Please contact mod to reinstall the application."
-  //       );
-  //     }
-  //     const applicationData = JSON.parse(
-  //       applicationDataJSON
-  //     ) as ApplicationData;
-  //     const { users } = applicationData;
-  //     const currentUserInfo = users[`${context.userId}`];
-  //     if (!currentUserInfo) {
-  //       applicationData["users"][`${context.userId}`] = {
-  //         quizStreak: 0,
-  //         totalPoints: 0, // TODO: remove this in production
-  //         firstVisit: true,
-  //         progress: "neutral", // This is used to decide whether the points are increasing for the user
-  //       };
-  //       setUserRedisData(applicationData["users"]);
-  //       await context.redis.set(
-  //         "application-data",
-  //         JSON.stringify(applicationData)
-  //       );
-  //     } else {
-  //       applicationData["users"][`${context.userId}`]["firstVisit"] = false;
-  //       setUserRedisData(applicationData["users"]);
-  //       await context.redis.set(
-  //         "application-data",
-  //         JSON.stringify(applicationData)
-  //       );
-  //     }
-  //   } catch (error: any) {
-  //     console.log("Error in Layout.tsx useAsync hook");
-  //     context.ui.showToast(
-  //       error.message ?? "Something went wrong. Please try again later."
-  //     );
-  //   } finally {
-  //     return {};
-  //   }
-  // });
 
   switch (currentPage) {
     case "quiz":

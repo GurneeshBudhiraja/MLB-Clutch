@@ -110,16 +110,26 @@ function QuizPage({
         if (!jsonApplicationData) {
           throw new Error("No application data found in quiz page");
         }
-
         const applicationData = JSON.parse(
           jsonApplicationData
         ) as ApplicationData;
         const { users } = applicationData;
         const userData = users[userId];
         if (!userData) {
-          throw new Error("No user data found in quiz page");
+          await updateRedisData(context, "application-data", {
+            ...applicationData,
+            users: {
+              ...users,
+              [userId]: {
+                quizStreak: 0,
+              },
+            },
+          });
+          return {
+            generatedQuestion: triviaQuestion,
+            quizStreak: 0,
+          };
         }
-
         /**
          * Return the data for the `finally` function to update the state
          */
@@ -128,9 +138,7 @@ function QuizPage({
           quizStreak: userData.quizStreak,
         };
       } catch (error) {
-        console.log(
-          "No application data found in quiz page. Please reinstall the application"
-        );
+        console.log("Error in the `QuizPage.tsx`");
         console.log(error);
         setCurrentPage("home");
         throw error;

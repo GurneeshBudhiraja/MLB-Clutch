@@ -69,7 +69,6 @@ export async function getTriviaQuestion(apiKey: string, language: TriviaLanguage
     }
 
     const parsedData = JSON.parse(content);
-    console.log(parsedData)
     // Validate response format
     if (
       !parsedData.question ||

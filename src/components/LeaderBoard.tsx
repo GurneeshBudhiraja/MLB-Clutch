@@ -7,20 +7,33 @@ function LeaderBoard({
   context,
 }: {
   setShowLeaderboard: StateSetter<boolean>;
-  context: RedditContext;
+  context: Devvit.Context;
 }) {
   const [leaderboardStats, setLeaderboardStats] = useState<
     Array<LeaderboardStatsType>
   >([]);
   const [loading, setLoading] = useState<boolean>(true);
 
+  /**
+   * Gets the user's data from Redis
+   * Gets the username and sort the user data based on the streak points
+   * Caches the result with a minute of expiry
+   */
   useAsync(
     async () => {
-      const redisData = await getRedisData(context, "application-data");
-      if (!redisData) {
-        return {};
-      }
-      return redisData;
+      return context.cache(
+        async () => {
+          const redisData = await getRedisData(context, "application-data");
+          if (!redisData) {
+            return {};
+          }
+          return redisData;
+        },
+        {
+          key: "application-data-cache",
+          ttl: 60 * 1000, // in milliseconds
+        }
+      );
     },
     {
       finally: async (data) => {
@@ -32,10 +45,14 @@ function LeaderBoard({
           for (const userId in users) {
             // Uses the userid to get the user info
             const user = await context.reddit.getUserById(userId);
-            const userName = user.username;
+            const userName = user?.username ?? "Unknown";
             const streak = users[userId].quizStreak;
             const progress: Progress = users[userId]?.progress ?? "neutral";
-            newLeaderboardStats.push({ userName, streak, progress });
+            newLeaderboardStats.push({
+              userName: userName || "Username not found",
+              streak,
+              progress,
+            });
           }
           newLeaderboardStats.sort((a, b) => b.streak - a.streak);
           setLeaderboardStats(newLeaderboardStats);
