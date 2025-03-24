@@ -19,7 +19,7 @@ Devvit.addSettings([
   },
 ]);
 
-// Router for the application
+// Renders the required page
 Devvit.addCustomPostType({
   name: "MLB Clutch Post",
   height: "tall",

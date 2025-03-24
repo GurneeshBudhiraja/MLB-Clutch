@@ -524,8 +524,8 @@ function QuizPage({
                          * Reduce it to the range of 0-4
                          * This increases the randomness
                          */
-                        `success/success${(Date.now() % 10) % 5}.gif`
-                      : `fails/fail${(Date.now() % 10) % 5}.gif`
+                        `success.gif`
+                      : `fail.gif`
                   }
                   imageHeight={200}
                   imageWidth={200}

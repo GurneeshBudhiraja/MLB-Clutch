@@ -18,7 +18,7 @@ function LoadingModal() {
       >
         <zstack width="40%" alignment="middle center" backgroundColor="#f8f8f8">
           <image
-            url="loading/baseball-loading.gif"
+            url="loader.gif"
             imageHeight={200}
             imageWidth={200}
             resizeMode="fit"
