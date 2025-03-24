@@ -32,7 +32,6 @@ function LeaderBoard({
           for (const userId in users) {
             // Uses the userid to get the user info
             const user = await context.reddit.getUserById(userId);
-            console.log(user);
             const userName = user.username;
             const streak = users[userId].quizStreak;
             const progress: Progress = users[userId]?.progress ?? "neutral";
