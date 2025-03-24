@@ -31,10 +31,12 @@ const sampleObject = {
 };
 
 function QuizPage({
+  currentPage,
   setCurrentPage,
   context,
   language,
 }: {
+  currentPage: CurrentPageType;
   setCurrentPage: StateSetter<CurrentPageType>;
   context: Devvit.Context;
   language: TriviaLanguage;
@@ -68,7 +70,7 @@ function QuizPage({
 
   // Automatically run the function on the component render
   // TODO: Uncomment the code below to fetch the trivia question
-  const generateTriviaQuestion = async () => {
+  const generateTriviaQuestion = async (fromButton?: "keepGoing") => {
     try {
       // Gets the openAI API key
       const openAIKey = await context.settings.get("open-ai-api-key");
@@ -138,6 +140,7 @@ function QuizPage({
       }
     },
     {
+      depends: [],
       finally: async (data) => {
         /**
          * Checks the truthiness of the data and update the states using the data object
@@ -182,6 +185,28 @@ function QuizPage({
     (values) => {}
   );
 
+  // async function keepGoingHandler() {
+  //   try {
+  //     console.log("Working");
+  //     // Gets the open ai key
+  //     const triviaQuestion = await generateTriviaQuestion();
+  //     console.log("Trivia question in TriviaModal is: ");
+  //     console.log(triviaQuestion);
+  //     if (!triviaQuestion) {
+  //       context.ui.showToast("Failed to generate new question.");
+  //       throw new Error("Failed to generate new question");
+  //     }
+  //     setTriviaQuestion({ ...triviaQuestion });
+  //     setModal({
+  //       showModal: false,
+  //       success: false,
+  //     });
+  //     setQuestionLoading(false);
+  //   } catch (error) {
+  //     setCurrentPage("home");
+  //   } finally {
+  //   }
+  // }
   return (
     <zstack width="100%" height="100%" grow={true}>
       {/* Background image */}
@@ -331,7 +356,6 @@ function QuizPage({
                         ...userData,
                         quizStreak: userData.quizStreak + 1,
                       };
-                      setUserData(newUserData);
                       setModal({
                         ...modal,
                         showModal: true,
@@ -356,12 +380,7 @@ function QuizPage({
                         context.ui.showToast(
                           "Please reinstall the application"
                         );
-                        // Rollback the modal and userData state
-                        const newUserData = {
-                          ...userData,
-                          quizStreak: userData.quizStreak - 1,
-                        };
-                        setUserData(newUserData);
+                        // Reset the modal state
                         setModal({
                           ...modal,
                           showModal: false,
@@ -386,12 +405,7 @@ function QuizPage({
                         currentRedisData
                       );
                       if (!updateRedisDataResponse) {
-                        // Rollback the modal and userData state
-                        const newUserData = {
-                          ...userData,
-                          quizStreak: userData.quizStreak - 1,
-                        };
-                        setUserData(newUserData);
+                        // Reset the modal state
                         setModal({
                           ...modal,
                           showModal: false,
@@ -403,11 +417,94 @@ function QuizPage({
                         throw new Error("Failed to update the redis data");
                       }
                       console.log("Updated the redis data");
+                      // Update the userData state
+                      setUserData(newUserData);
                     } catch (error) {
                       console.log("Error in correct answer ");
                       console.log(error);
                     } finally {
                       // Resetting the option value selected
+                      setSelectedOption(-1);
+                    }
+                  } else if (evaluation === "incorrect") {
+                    /**
+                     * When the selected answer is wrong
+                     */
+
+                    try {
+                      const newUserData = {
+                        ...userData,
+                        quizStreak: 0,
+                      };
+
+                      setModal({
+                        ...modal,
+                        showModal: true,
+                        success: false,
+                      });
+
+                      // UserId of the current user
+                      const { userId } = userData;
+
+                      // Gets the old Redis data
+                      console.log(
+                        "Getting the current Redis data *** Revert back to normal ***"
+                      );
+                      const currentRedisData = await getRedisData(
+                        context,
+                        "application-data"
+                      );
+
+                      // Checks the truthiness and type of currentRedisData
+                      if (
+                        !currentRedisData ||
+                        typeof currentRedisData === "boolean"
+                      ) {
+                        context.ui.showToast(
+                          "Please reinstall the application"
+                        );
+                        // Reset the modal state
+                        setModal({
+                          ...modal,
+                          showModal: false,
+                          success: false,
+                        });
+                        throw new Error("No redis data found");
+                      }
+
+                      console.log("Current Redis data:");
+                      console.log(currentRedisData);
+                      console.log("=======================");
+
+                      // Updating the currentRedisData object
+                      currentRedisData["users"][userId]["quizStreak"] = 0;
+
+                      // Uses the util function to update the Redis storage.
+                      console.log("Updating the redis data");
+                      const updateRedisDataResponse = await updateRedisData(
+                        context,
+                        "application-data",
+                        currentRedisData
+                      );
+                      if (!updateRedisDataResponse) {
+                        // Reset the modal state
+                        setModal({
+                          ...modal,
+                          showModal: false,
+                          success: false,
+                        });
+                        context.ui.showToast(
+                          "Unable to update data. Please try again later."
+                        );
+                        throw new Error("Failed to update the redis data");
+                      }
+                      console.log("Updated the redis data");
+                      // Update the userData state
+                      setUserData(newUserData);
+                    } catch (error) {
+                      console.log("Error:");
+                      console.log(error);
+                    } finally {
                       setSelectedOption(-1);
                     }
                   }
@@ -422,17 +519,185 @@ function QuizPage({
       {loading && <Loading />}
 
       {/* Modal  */}
-      {modal.showModal &&
+      {/* {modal.showModal &&
         (questionLoading ? (
           <LoadingModal />
         ) : (
           <TriviaModal
+            keepGoingHandler={keepGoingHandler}
+            setTriviaQuestion={setTriviaQuestion}
+            language={language}
+            context={context}
+            setModal={setModal}
             setQuestionLoading={setQuestionLoading}
             streak={userData.quizStreak}
             setCurrentPage={setCurrentPage}
             success={modal.success}
             answer={triviaQuestion["options"][triviaQuestion.answer]}
           />
+        ))} */}
+      {modal.showModal &&
+        (questionLoading ? (
+          <LoadingModal />
+        ) : (
+          <zstack
+            width="100%"
+            height="100%"
+            alignment="middle center"
+            backgroundColor="rgba(0, 0, 0, 0.5)"
+          >
+            <hstack
+              width="80%"
+              height="50%"
+              cornerRadius="medium"
+              backgroundColor="neutral-background"
+              border="thin"
+              borderColor="white"
+            >
+              {/* Your existing code remains unchanged here */}
+              <zstack
+                width="40%"
+                alignment="middle center"
+                backgroundColor="#f8f8f8"
+              >
+                <image
+                  url={
+                    modal.success
+                      ? /**
+                         * Gets the last digit from the Date.now()
+                         * Reduce it to the range of 0-4
+                         * This increases the randomness
+                         */
+                        `success/success${(Date.now() % 10) % 5}.gif`
+                      : `fails/fail${(Date.now() % 10) % 5}.gif`
+                  }
+                  imageHeight={200}
+                  imageWidth={200}
+                  resizeMode="fit"
+                />
+              </zstack>
+
+              <vstack
+                backgroundColor="#002D72"
+                padding="large"
+                gap="medium"
+                width="60%"
+                alignment="middle center"
+              >
+                <hstack alignment="middle center" gap="small">
+                  <icon
+                    name={modal.success ? "approve" : "remove"}
+                    color={modal.success ? "success-plain" : "danger-plain"}
+                    size="large"
+                  />
+                  <text
+                    style="heading"
+                    color={modal.success ? "success-plain" : "danger-plain"}
+                  >
+                    {modal.success ? "Correct!" : "Incorrect!"}
+                  </text>
+                </hstack>
+
+                <text alignment="center" color="white">
+                  {modal.success
+                    ? "Great job! You got the right answer."
+                    : "Sorry, that's not the right answer."}
+                </text>
+
+                {/* Add streak information ONLY for modal.success case */}
+                {modal.success && (
+                  <vstack
+                    padding="medium"
+                    backgroundColor="#4CAF50"
+                    cornerRadius="small"
+                    gap="small"
+                    width="90%"
+                    alignment="middle center"
+                  >
+                    <hstack gap="small" alignment="center">
+                      <image
+                        imageHeight={"20px"}
+                        imageWidth={"20px"}
+                        height={"20px"}
+                        url="fire-flame.gif"
+                      />
+                      <text weight="bold" color="white" style="heading">
+                        Streak Updated!
+                      </text>
+                    </hstack>
+                    <text color="white">
+                      You're now on a {userData.quizStreak}-answer streak!
+                    </text>
+                  </vstack>
+                )}
+
+                {!modal.success && (
+                  <vstack
+                    padding="medium"
+                    backgroundColor="#D32F2F"
+                    cornerRadius="small"
+                    gap="small"
+                    width="90%"
+                  >
+                    <hstack gap="small" alignment="middle start">
+                      <icon
+                        name="checkmark-outline"
+                        color="white"
+                        size="small"
+                      />
+                      <text weight="bold" color="white">
+                        Correct answer:{" "}
+                        {triviaQuestion["options"][triviaQuestion["answer"]]}
+                      </text>
+                    </hstack>
+
+                    <hstack gap="small" alignment="middle start">
+                      {/* <icon name="" color="white" size="small" /> */}
+                      <text color="white">Your streak has been reset to 0</text>
+                    </hstack>
+                  </vstack>
+                )}
+
+                {modal.success ? (
+                  <hstack gap="medium" alignment="center">
+                    <button
+                      appearance="bordered"
+                      onPress={() => {
+                        setCurrentPage("home");
+                      }}
+                      icon="home-fill"
+                    >
+                      Home
+                    </button>
+                    <button
+                      appearance="primary"
+                      onPress={async () => {
+                        setModal({
+                          showModal: false,
+                          success: false,
+                        });
+                        setLoading(true);
+                        setCurrentPage("quiz");
+                      }}
+                    >
+                      Keep Going!
+                    </button>
+                  </hstack>
+                ) : (
+                  <button
+                    appearance="bordered"
+                    textColor="white"
+                    onPress={() => {
+                      setCurrentPage("home");
+                    }}
+                    icon="home-fill"
+                  >
+                    Back to Home
+                  </button>
+                )}
+              </vstack>
+            </hstack>
+          </zstack>
         ))}
     </zstack>
   );

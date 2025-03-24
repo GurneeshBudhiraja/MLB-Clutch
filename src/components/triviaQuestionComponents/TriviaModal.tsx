@@ -1,14 +1,25 @@
 import { Devvit, StateSetter, useState } from "@devvit/public-api";
+import { getTriviaQuestion } from "../../utils/openAI.js";
 
 function TriviaModal({
+  setTriviaQuestion,
+  context,
+  language = "english",
   setCurrentPage,
   setQuestionLoading,
+  setModal,
   success,
   answer,
   streak, // streak after it has been updated
+  setLoading,
 }: {
+  setLoading: StateSetter<boolean>;
+  context: Devvit.Context;
+  language: TriviaLanguage;
+  setTriviaQuestion: StateSetter<TriviaQuestion>;
   setCurrentPage: StateSetter<CurrentPageType>;
   setQuestionLoading: StateSetter<boolean>;
+  setModal: StateSetter<{ showModal: boolean; success: boolean }>;
   success: boolean;
   answer: string;
   streak: number;
@@ -31,16 +42,12 @@ function TriviaModal({
         {/* Your existing code remains unchanged here */}
         <zstack width="40%" alignment="middle center" backgroundColor="#f8f8f8">
           <image
-            // url={
-            //   success
-            //     ? `success/success${Math.floor(Math.random() * 5)}.gif`
-            //     : `fails/fail${Math.floor(Math.random() * 5)}.gif`
-            // }
             url={
               success
                 ? /**
                    * Gets the last digit from the Date.now()
                    * Reduce it to the range of 0-4
+                   * This increases the randomness
                    */
                   `success/success${(Date.now() % 10) % 5}.gif`
                 : `fails/fail${(Date.now() % 10) % 5}.gif`
@@ -139,10 +146,7 @@ function TriviaModal({
               <button
                 appearance="primary"
                 onPress={() => {
-                  setQuestionLoading(true);
-                  /**
-                   * TODO: add the feature to fetch the new question based on the langauge and then update the trivia question state. Then, update the state of the questionLoading to false.
-                   * */
+                  setCurrentPage("home");
                 }}
               >
                 Keep Going!

@@ -6,6 +6,12 @@ type TriviaLanguage = "english" | "spanish" | "japanese"
 
 type TriviaDifficulty = "easy" | "medium" | "hard";
 
+type RedisKey = "application-data"
+
+type Progress = "positive" | "negative" | "neutral"
+
+type RedditContext = Devvit.Context
+
 type TriviaSettings = {
   language: TriviaLanguage;
 }
@@ -44,4 +50,8 @@ type TriviaButtonProps = {
   text: string;
 }
 
-type RedisKey = "application-data"
+type LeaderboardStatsType = {
+  streak: number;
+  userName: string;
+  progress: Progress;
+}
