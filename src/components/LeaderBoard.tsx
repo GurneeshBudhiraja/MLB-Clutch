@@ -49,7 +49,7 @@ function LeaderBoard({
             const streak = users[userId].quizStreak;
             const progress: Progress = users[userId]?.progress ?? "neutral";
             newLeaderboardStats.push({
-              userName: userName || "Username not found",
+              userName: userName ?? "Unknown",
               streak,
               progress,
             });
@@ -148,7 +148,7 @@ function LeaderBoard({
                         : "neutral-background" // Alternating row color
                     }
                     border={index === 0 ? "thin" : "none"}
-                    borderColor={index === 0 ? "#bf0d3e" : ""}
+                    borderColor={index === 0 ? "Yellow-300" : ""}
                     cornerRadius={index === 0 ? "small" : "none"}
                   >
                     <text
@@ -171,21 +171,21 @@ function LeaderBoard({
                         player.progress === "neutral") && (
                         <icon
                           name="upvote-fill"
-                          color="#bf0d3e" // MLB red for positive trend
+                          color="Yellow-300" // MLB red for positive trend
                           size="small"
                         />
                       )}
                       {player.progress === "negative" && (
                         <icon
                           name="downvote-fill"
-                          color="#002D72" // MLB blue for negative trend
+                          color="Yellow-500" // MLB blue for negative trend
                           size="small"
                         />
                       )}
                       <text
                         weight="bold"
                         color={
-                          index === 0 ? "#bf0d3e" : "neutral-content-strong"
+                          index === 0 ? "Yellow-300" : "neutral-content-strong"
                         }
                       >
                         {player.streak}
