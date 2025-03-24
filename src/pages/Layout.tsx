@@ -3,6 +3,7 @@ import LiveScore from "./LiveScorePage.js";
 import HomePage from "./HomePage.js";
 import QuizPage from "./QuizPage.js";
 import RedditOFDPage from "./RedditOFDPage.js";
+import Home from "./Home.js";
 
 function Layout({ context }: { context: Devvit.Context }) {
   // Current page
@@ -73,8 +74,9 @@ function Layout({ context }: { context: Devvit.Context }) {
       if (!currentUserInfo) {
         applicationData["users"][`${context.userId}`] = {
           quizStreak: 0,
-          totalPoints: 0,
+          totalPoints: 0, // TODO: remove this in production
           firstVisit: true,
+          progress: "neutral", // This is used to decide whether the points are increasing for the user
         };
         setUserRedisData(applicationData["users"]);
         await context.redis.set(
@@ -103,6 +105,7 @@ function Layout({ context }: { context: Devvit.Context }) {
     case "quiz":
       return (
         <QuizPage
+          currentPage={currentPage}
           context={context}
           setCurrentPage={setCurrentPage}
           language={quizSettings.language}
@@ -110,40 +113,7 @@ function Layout({ context }: { context: Devvit.Context }) {
       );
     case "home":
     default:
-      return (
-        <zstack width="100%" height="100%" grow={true}>
-          <image
-            url="background.jpeg"
-            description="Background Image"
-            imageHeight={800}
-            imageWidth={800}
-            width="100%"
-            height="100%"
-            resizeMode="cover"
-          />
-          <hstack>
-            <button
-              onPress={async (data) => {
-                const applicationDataJson = await context.redis.get(
-                  "application-data"
-                );
-                console.log("application-data is:");
-                console.log(applicationDataJson);
-              }}
-            >
-              Check redis data
-            </button>
-            <button
-              onPress={() => {
-                // TODO: uncomment below in production
-                context.ui.showForm(quizSettingsForm);
-              }}
-            >
-              Ultimate Streak Mode
-            </button>
-          </hstack>
-        </zstack>
-      );
+      return <Home context={context} quizSettingsForm={quizSettingsForm} />;
   }
 }
 
