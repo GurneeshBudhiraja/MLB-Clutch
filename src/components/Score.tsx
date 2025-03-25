@@ -53,7 +53,7 @@ function Score() {
             const formattedDate = [
               currentYear,
               currentMonth.padStart(2, "0"),
-              String(Number(currentDate) - 1).padStart(2, "0"),
+              String(Number(currentDate)).padStart(2, "0"),
             ].join("-");
 
             const response = await getMatchData(formattedDate);
