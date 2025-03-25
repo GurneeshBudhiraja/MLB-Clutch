@@ -1,6 +1,7 @@
 import { Devvit, FormKey, useState } from "@devvit/public-api";
 import LeaderBoard from "../components/LeaderBoard.js";
 import { getTriviaQuestion } from "../utils/openAI.js";
+import Score from "../components/Score.js";
 
 function Home({
   context,
@@ -53,6 +54,7 @@ function Home({
           <text size="xxlarge" weight="bold" color="white" style="heading">
             BASEBALL TRIVIA
           </text>
+          <Score />
 
           <button
             appearance="primary"

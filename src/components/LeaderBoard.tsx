@@ -171,14 +171,14 @@ function LeaderBoard({
                         player.progress === "neutral") && (
                         <icon
                           name="upvote-fill"
-                          color="Yellow-300" // MLB red for positive trend
+                          color="KiwiGreen-400"
                           size="small"
                         />
                       )}
                       {player.progress === "negative" && (
                         <icon
                           name="downvote-fill"
-                          color="Yellow-500" // MLB blue for negative trend
+                          color="Red-500"
                           size="small"
                         />
                       )}
