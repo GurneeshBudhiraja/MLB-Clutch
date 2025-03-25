@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@devvit/public-api": "0.11.10",
+    "motion": "^12.5.0",
     "openai": "^4.88.0",
     "ts-node": "^10.9.2"
   },

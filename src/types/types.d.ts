@@ -57,7 +57,7 @@ type LeaderboardStatsType = {
 }
 
 
-type CurrentGame = {
+type Game = {
   gamePk: number;
   away: {
     teamName: string;

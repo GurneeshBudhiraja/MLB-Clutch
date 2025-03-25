@@ -1,10 +1,13 @@
+import { useState } from "react";
+import Header from "./pages/Header";
+import CurrentMatches from "./pages/CurrentMatches";
+
 function App() {
+  const [currentPage, setCurrentPage] = useState<CurrentPage>("currentMatches");
   return (
-    <div className="box-border h-screen w-screen text-theme-white bg-theme-blue">
-      <div className="text-theme-red">THis is testing</div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+    <div className="box-border h-full w-screen text-theme-white bg-theme-blue overflow-scroll">
+      <Header setCurrentPage={setCurrentPage} />
+      {currentPage === "currentMatches" && <CurrentMatches />}
     </div>
   );
 }
