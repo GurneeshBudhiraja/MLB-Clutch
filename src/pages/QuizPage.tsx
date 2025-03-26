@@ -1,3 +1,5 @@
+// TODO: move this to webview
+
 import {
   Devvit,
   StateSetter,
@@ -9,8 +11,6 @@ import { getTriviaQuestion } from "../utils/openAI.js";
 import { Loading } from "../components/Loading.js";
 import TriviaOption from "../components/triviaQuestionComponents/TriviaOption.js";
 import TriviaButton from "../components/triviaQuestionComponents/TriviaButton.js";
-import TriviaModal from "../components/triviaQuestionComponents/TriviaModal.js";
-import LoadingModal from "../components/LoadingModal.js";
 import {
   evaluateQuestion,
   getRedisData,
@@ -64,7 +64,6 @@ function QuizPage({
     quizStreak: 0,
   });
 
-  const [questionLoading, setQuestionLoading] = useState<boolean>(false);
   const [keepGoing, setKeepGoing] = useState<boolean>(false);
 
   // Automatically run the function on the component render
@@ -500,153 +499,146 @@ function QuizPage({
       {loading && <Loading />}
 
       {/* Modal  */}
-      {modal.showModal &&
-        (questionLoading ? (
-          <LoadingModal />
-        ) : (
-          <zstack
-            width="100%"
-            height="100%"
-            alignment="middle center"
-            backgroundColor="rgba(0, 0, 0, 0.5)"
+      {modal.showModal && (
+        <zstack
+          width="100%"
+          height="100%"
+          alignment="middle center"
+          backgroundColor="rgba(0, 0, 0, 0.5)"
+        >
+          <hstack
+            width="80%"
+            height="50%"
+            cornerRadius="medium"
+            backgroundColor="neutral-background"
+            border="thin"
+            borderColor="white"
           >
-            <hstack
-              width="80%"
-              height="50%"
-              cornerRadius="medium"
-              backgroundColor="neutral-background"
-              border="thin"
-              borderColor="white"
+            {/* Your existing code remains unchanged here */}
+            <zstack
+              width="40%"
+              alignment="middle center"
+              backgroundColor="#f8f8f8"
             >
-              {/* Your existing code remains unchanged here */}
-              <zstack
-                width="40%"
-                alignment="middle center"
-                backgroundColor="#f8f8f8"
-              >
-                <image
-                  url={
-                    modal.success
-                      ? /**
-                         * Gets the last digit from the Date.now()
-                         * Reduce it to the range of 0-4
-                         * This increases the randomness
-                         */
-                        `success.gif`
-                      : `fail.gif`
-                  }
-                  imageHeight={200}
-                  imageWidth={200}
-                  resizeMode="fit"
+              <image
+                url={
+                  modal.success
+                    ? /**
+                       * Gets the last digit from the Date.now()
+                       * Reduce it to the range of 0-4
+                       * This increases the randomness
+                       */
+                      `success.gif`
+                    : `fail.gif`
+                }
+                imageHeight={200}
+                imageWidth={200}
+                resizeMode="fit"
+              />
+            </zstack>
+
+            <vstack
+              backgroundColor="#002D72"
+              padding="large"
+              gap="medium"
+              width="60%"
+              alignment="middle center"
+            >
+              <hstack alignment="middle center" gap="small">
+                <icon
+                  name={modal.success ? "approve" : "remove"}
+                  color={modal.success ? "success-plain" : "danger-plain"}
+                  size="large"
                 />
-              </zstack>
-
-              <vstack
-                backgroundColor="#002D72"
-                padding="large"
-                gap="medium"
-                width="60%"
-                alignment="middle center"
-              >
-                <hstack alignment="middle center" gap="small">
-                  <icon
-                    name={modal.success ? "approve" : "remove"}
-                    color={modal.success ? "success-plain" : "danger-plain"}
-                    size="large"
-                  />
-                  <text
-                    style="heading"
-                    color={modal.success ? "success-plain" : "danger-plain"}
-                  >
-                    {modal.success ? "Correct!" : "Incorrect!"}
-                  </text>
-                </hstack>
-
-                <text alignment="center" color="white">
-                  {modal.success
-                    ? "Great job! You got the right answer."
-                    : "Sorry, that's not the right answer."}
+                <text
+                  style="heading"
+                  color={modal.success ? "success-plain" : "danger-plain"}
+                >
+                  {modal.success ? "Correct!" : "Incorrect!"}
                 </text>
+              </hstack>
 
-                {/* Add streak information ONLY for modal.success case */}
-                {modal.success && (
-                  <vstack
-                    padding="medium"
-                    backgroundColor="#4CAF50"
-                    cornerRadius="small"
-                    gap="small"
-                    width="90%"
-                    alignment="middle center"
-                  >
-                    <hstack gap="small" alignment="center">
-                      <image
-                        imageHeight={"20px"}
-                        imageWidth={"20px"}
-                        height={"20px"}
-                        url="fire-flame.gif"
-                      />
-                      <text weight="bold" color="white" style="heading">
-                        Streak Updated!
-                      </text>
-                    </hstack>
-                    <text color="white">
-                      You're now on a {userData.quizStreak}-answer streak!
+              <text alignment="center" color="white">
+                {modal.success
+                  ? "Great job! You got the right answer."
+                  : "Sorry, that's not the right answer."}
+              </text>
+
+              {/* Add streak information ONLY for modal.success case */}
+              {modal.success && (
+                <vstack
+                  padding="medium"
+                  backgroundColor="#4CAF50"
+                  cornerRadius="small"
+                  gap="small"
+                  width="90%"
+                  alignment="middle center"
+                >
+                  <hstack gap="small" alignment="center">
+                    <image
+                      imageHeight={"20px"}
+                      imageWidth={"20px"}
+                      height={"20px"}
+                      url="fire-flame.gif"
+                    />
+                    <text weight="bold" color="white" style="heading">
+                      Streak Updated!
                     </text>
-                  </vstack>
-                )}
+                  </hstack>
+                  <text color="white">
+                    You're now on a {userData.quizStreak}-answer streak!
+                  </text>
+                </vstack>
+              )}
 
-                {!modal.success && (
-                  <vstack
-                    padding="medium"
-                    backgroundColor="#D32F2F"
-                    cornerRadius="small"
-                    gap="small"
-                    width="90%"
-                  >
-                    <hstack gap="small" alignment="middle start">
-                      <icon
-                        name="checkmark-outline"
-                        color="white"
-                        size="small"
-                      />
-                      <text weight="bold" color="white">
-                        Correct answer:{" "}
-                        {triviaQuestion["options"][triviaQuestion["answer"]]}
-                      </text>
-                    </hstack>
-                    <text>
-                      You're now on a {userData.quizStreak}-answer streak!
+              {!modal.success && (
+                <vstack
+                  padding="medium"
+                  backgroundColor="#D32F2F"
+                  cornerRadius="small"
+                  gap="small"
+                  width="90%"
+                >
+                  <hstack gap="small" alignment="middle start">
+                    <icon name="checkmark-outline" color="white" size="small" />
+                    <text weight="bold" color="white">
+                      Correct answer:{" "}
+                      {triviaQuestion["options"][triviaQuestion["answer"]]}
                     </text>
-                  </vstack>
-                )}
+                  </hstack>
+                  <text>
+                    You're now on a {userData.quizStreak}-answer streak!
+                  </text>
+                </vstack>
+              )}
 
-                <hstack gap="medium" alignment="center">
-                  <button
-                    appearance="bordered"
-                    onPress={() => {
-                      setCurrentPage("home");
-                    }}
-                    icon="home-fill"
-                  >
-                    Home
-                  </button>
-                  <button
-                    appearance="primary"
-                    onPress={async () => {
-                      setModal({
-                        showModal: false,
-                        success: false,
-                      });
-                      setKeepGoing(!keepGoing);
-                    }}
-                  >
-                    Keep Going!
-                  </button>
-                </hstack>
-              </vstack>
-            </hstack>
-          </zstack>
-        ))}
+              <hstack gap="medium" alignment="center">
+                <button
+                  appearance="bordered"
+                  onPress={() => {
+                    setCurrentPage("home");
+                  }}
+                  icon="home-fill"
+                >
+                  Home
+                </button>
+                <button
+                  appearance="primary"
+                  onPress={async () => {
+                    setModal({
+                      showModal: false,
+                      success: false,
+                    });
+                    setKeepGoing(!keepGoing);
+                  }}
+                >
+                  Keep Going!
+                </button>
+              </hstack>
+            </vstack>
+          </hstack>
+        </zstack>
+      )}
     </zstack>
   );
 }

@@ -1,12 +1,4 @@
-import {
-  Devvit,
-  useAsync,
-  useForm,
-  useState,
-  useWebView,
-} from "@devvit/public-api";
-import LiveScore from "./LiveScorePage.js";
-import HomePage from "./HomePage.js";
+import { Devvit, useForm, useState } from "@devvit/public-api";
 import QuizPage from "./QuizPage.js";
 import Home from "./Home.js";
 

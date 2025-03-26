@@ -1,3 +1,4 @@
+// TODO: redesign the homepage.
 import { Devvit, FormKey, useState } from "@devvit/public-api";
 import LeaderBoard from "../components/LeaderBoard.js";
 import { getTriviaQuestion } from "../utils/openAI.js";
