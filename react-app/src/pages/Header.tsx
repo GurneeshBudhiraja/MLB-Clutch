@@ -1,43 +1,44 @@
 import { motion } from "motion/react";
-import React from "react";
+import React, { useState } from "react";
 
 function Header({
   setCurrentPage,
 }: {
   setCurrentPage: React.Dispatch<React.SetStateAction<CurrentPage>>;
 }) {
+  const [activeLink, setActiveLink] = useState<"" | HeaderOptions>(
+    "currentMatches"
+  );
+
+  const pageOptions: PageOptions = {
+    currentMatches: "Ongoing Games",
+    bets: "My Predictions",
+  };
+
   return (
     <motion.header
-      className="bg-[var(--color-theme-blue)] w-full h-16 flex items-center justify-between px-8 shadow-lg"
-      initial={{ opacity: 0, y: -50 }}
-      animate={{ opacity: 1, y: 0 }}
+      className="bg-theme-blue w-full h-16 flex items-center justify-between px-8 shadow-lg"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
     >
-      <motion.div
-        className="text-[var(--color-theme-white)] text-2xl font-bold"
-        whileHover={{ scale: 1.05 }}
-      >
-        MLB Betting
-      </motion.div>
-
-      <nav className="flex gap-8">
-        <motion.div
-          onClick={() => setCurrentPage("currentMatches")}
-          className="text-[var(--color-theme-white)] hover:text-[var(--color-theme-red)] transition-colors cursor-pointer"
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          Current Matches
-        </motion.div>
-
-        <motion.div
-          onClick={() => setCurrentPage("bets")}
-          className="text-[var(--color-theme-white)] hover:text-[var(--color-theme-red)] transition-colors cursor-pointer"
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          Past Bets
-        </motion.div>
+      <nav className="flex gap-8 justify-end w-full">
+        {(["currentMatches", "bets"] as HeaderOptions[]).map(
+          (option, index) => (
+            <motion.div
+              key={index}
+              onClick={() => {
+                setActiveLink(option);
+                setCurrentPage(option);
+              }}
+              className={`transition-colors cursor-pointer border border-theme-white px-4 py-1 rounded-full text-theme-white hover:border-theme-red   ${
+                activeLink === option && "bg-theme-red "
+              }`}
+            >
+              {pageOptions[option]}
+            </motion.div>
+          )
+        )}
       </nav>
     </motion.header>
   );

@@ -5,7 +5,10 @@ import UserBets from "./pages/UserBets";
 
 function App() {
   const [currentPage, setCurrentPage] = useState<CurrentPage>("currentMatches");
-  const teamLogoLinks = {
+  const assetsLinks: AssetLinks = {
+    loader: "https://i.redd.it/wrrgcv1e6ppe1.gif",
+    "fire-flame": "https://i.redd.it/b9z995x0ebqe1.gif",
+    leaderboard: "https://i.redd.it/uyo7vm2dwjqe1.gif",
     "108": "https://i.redd.it/22j4630f4xqe1.png",
     "109": "https://i.redd.it/0kt6hlhnsyqe1.png",
     "110": "https://i.redd.it/fjgsy3hnsyqe1.png",
@@ -32,10 +35,10 @@ function App() {
   };
 
   return (
-    <div className="box-border h-full w-screen text-theme-white bg-theme-blue overflow-scroll">
+    <div className="box-border h-screen w-screen text-theme-white bg-theme-blue overflow-scroll">
       <Header setCurrentPage={setCurrentPage} />
       {currentPage === "currentMatches" ? (
-        <CurrentMatches teamLogoLinks={teamLogoLinks} />
+        <CurrentMatches assetsLinks={assetsLinks} />
       ) : (
         <UserBets />
       )}

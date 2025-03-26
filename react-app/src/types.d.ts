@@ -19,3 +19,46 @@ type Game = {
   },
   [key: string]: any; // Additional properties for the game
 }
+
+
+
+type AssertLinksProperties =
+  "loader" |
+  "fire-flame" |
+  "leaderboard" |
+  "108" |
+  "109" |
+  "110" |
+  "111" |
+  "112" |
+  "113" |
+  "114" |
+  "115" |
+  "116" |
+  "117" |
+  "118" |
+  "119" |
+  "120" |
+  "121" |
+  "133" |
+  "134" |
+  "135" |
+  "136" |
+  "137" |
+  "138" |
+  "139" |
+  "140" |
+  "teamPlaceholder"
+
+
+type AssetLinks = {
+  [key in AssertLinksProperties]: string;
+}
+
+
+type HeaderOptions = "currentMatches" | "bets"
+
+
+type PageOptions = {
+  [key in HeaderOptions]?: string;
+}

@@ -2,11 +2,7 @@
 import React, { useEffect, useState } from "react";
 import BetModal from "../components/BetModal";
 
-function CurrentMatches({
-  teamLogoLinks,
-}: {
-  teamLogoLinks: Record<string, string>;
-}) {
+function CurrentMatches({ assetsLinks }: { assetsLinks: AssetLinks }) {
   const [mlbMatches, setMLBMatches] = React.useState<Game[]>([]);
   // @ts-ignore
   const [date, setDate] = useState<string>("currentDate");
@@ -16,17 +12,6 @@ function CurrentMatches({
   const [redisUserInfo, setRedisUserInfo] = useState<Record<string, any>>({});
   useEffect(() => {
     setLoading(true);
-    // This is to send message to Devvit app to get the matches info happening at the present moment
-    window.parent.postMessage(
-      {
-        type: "getMatches",
-        data: {
-          date,
-          matchFilter: "live",
-        },
-      },
-      "*"
-    );
 
     // Gets the streak points from the Devvit
     window.parent.postMessage(
@@ -38,6 +23,8 @@ function CurrentMatches({
 
     window.addEventListener("message", (event) => {
       console.log("Message has been received");
+      console.log(event.data.type);
+      console.log(event.data.data);
       if (event.data.type === "devvit-message") {
         const { data } = event.data;
         console.log(data);
@@ -69,12 +56,33 @@ function CurrentMatches({
       }
       setLoading(false);
     });
+
+    return () => setLoading(true);
   }, []);
+
+  useEffect(() => {
+    // This is to send message to Devvit app to get the matches info happening at the present moment
+    window.parent.postMessage(
+      {
+        type: "getMatches",
+        data: {
+          date,
+          matchFilter: "live",
+        },
+      },
+      "*"
+    );
+  }, [date]);
+  
   return (
-    <div className="p-4 bg-mlb-navy h-full">
+    <div className="p-4 relative h-full">
       {loading && (
-        <div className="flex justify-center items-center h-40">
-          <img src="" alt="Loading..." className="w-20 h-20" />
+        <div className="flex justify-center items-center h-full">
+          <img
+            src={assetsLinks["loader"]}
+            alt="Loading..."
+            className="w-40 h-40"
+          />
         </div>
       )}
 
@@ -119,8 +127,9 @@ function CurrentMatches({
                     <div className="relative w-20 h-20 mb-3">
                       <img
                         src={
-                          teamLogoLinks[String(awayTeam.team.id)] ??
-                          teamLogoLinks["teamPlaceholder"]
+                          assetsLinks[
+                            String(awayTeam.team.id) as AssertLinksProperties
+                          ] ?? assetsLinks["teamPlaceholder"]
                         }
                         alt={awayTeam.team.name}
                         className="w-full h-full object-contain drop-shadow-lg"
@@ -159,8 +168,9 @@ function CurrentMatches({
                     <div className="relative w-20 h-20 mb-3">
                       <img
                         src={
-                          teamLogoLinks[String(homeTeam.team.id)] ??
-                          teamLogoLinks["teamPlaceholder"]
+                          assetsLinks[
+                            String(homeTeam.team.id) as AssertLinksProperties
+                          ] ?? assetsLinks["teamPlaceholder"]
                         }
                         alt={homeTeam.team.name}
                         className="w-full h-full object-contain drop-shadow-lg"
