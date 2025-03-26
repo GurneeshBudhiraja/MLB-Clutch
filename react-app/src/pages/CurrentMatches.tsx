@@ -1,11 +1,15 @@
+// TODOD: fix the type issue later on
 import React, { useEffect, useState } from "react";
+import BetModal from "../components/BetModal";
 
 function CurrentMatches() {
   const [mlbMatches, setMLBMatches] = React.useState<Game[]>([]);
-  // @ts-expect-error Ts issue
+  // @ts-ignore
   const [date, setDate] = useState<string>("currentDate");
   const [loading, setLoading] = useState<boolean>(false);
-
+  const [showBetModal, setShowBetModal] = useState<boolean>(false);
+  const [selectedMatch, setSelectedMatch] = useState<Record<string, any>>({});
+  const [redisUserInfo, setRedisUserInfo] = useState<Record<string, any>>({});
   useEffect(() => {
     setLoading(true);
     // This is to send message to Devvit app to get the matches info happening at the present moment
@@ -16,6 +20,14 @@ function CurrentMatches() {
           date,
           matchFilter: "live",
         },
+      },
+      "*"
+    );
+
+    // Gets the streak points from the Devvit
+    window.parent.postMessage(
+      {
+        type: "userRedisInfo",
       },
       "*"
     );
@@ -39,6 +51,16 @@ function CurrentMatches() {
             console.log("Error code:");
             console.log(errorCode);
           }
+        } else if (message.devvitDataType === "streak-points-info") {
+          const { errorCode, success, results } = message.devvitData;
+          console.log(errorCode);
+          console.log(success);
+          console.log(results);
+          if (success) {
+            setRedisUserInfo(results);
+          } else {
+            console.log("Error in getUserStreak");
+          }
         }
       }
       setLoading(false);
@@ -48,11 +70,7 @@ function CurrentMatches() {
     <div className="p-4 bg-mlb-navy h-full">
       {loading && (
         <div className="flex justify-center items-center h-40">
-          <img
-            src="https://cdn.dribbble.com/users/187678/screenshots/6169547/media/bd30aaca24a1a9d25d57b4f10cd5b1d4.gif"
-            alt="Loading..."
-            className="w-20 h-20"
-          />
+          <img src="" alt="Loading..." className="w-20 h-20" />
         </div>
       )}
 
@@ -67,6 +85,16 @@ function CurrentMatches() {
               <div
                 key={match.gamePk}
                 className="relative bg-gradient-to-br from-mlb-navy/90 to-mlb-blue/90 backdrop-blur-sm rounded-xl p-5 shadow-2xl transform transition-all hover:scale-[1.02] hover:shadow-3xl border border-white/10"
+                onClick={() => {
+                  console.log(match);
+                  if (match?.status?.abstractGameCode === "F") {
+                    console.log("Match has finished");
+                    console.log("no friendly betting");
+                    return;
+                  }
+                  setShowBetModal(true);
+                  setSelectedMatch(match);
+                }}
               >
                 {/* Game Status Badge */}
                 <div
@@ -85,7 +113,7 @@ function CurrentMatches() {
                   <div className="flex-1 flex flex-col items-center">
                     <div className="relative w-20 h-20 mb-3">
                       <img
-                        src={`https://www.mlbstatic.com/team-logos/${awayTeam.team.id}.svg`}
+                        src={"https://i.redd.it/22j4630f4xqe1.png"}
                         alt={awayTeam.team.name}
                         className="w-full h-full object-contain drop-shadow-lg"
                       />
@@ -122,7 +150,7 @@ function CurrentMatches() {
                   <div className="flex-1 flex flex-col items-center">
                     <div className="relative w-20 h-20 mb-3">
                       <img
-                        src={`https://www.mlbstatic.com/team-logos/${homeTeam.team.id}.svg`}
+                        src={""}
                         alt={homeTeam.team.name}
                         className="w-full h-full object-contain drop-shadow-lg"
                       />
@@ -167,6 +195,14 @@ function CurrentMatches() {
               </div>
             );
           })}
+
+          {showBetModal && (
+            <BetModal
+              match={selectedMatch}
+              setShowBetModal={setShowBetModal}
+              redisUserInfo={redisUserInfo}
+            />
+          )}
         </div>
       )}
     </div>

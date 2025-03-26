@@ -1,6 +1,6 @@
 import { Devvit, useAsync, useState, useWebView } from "@devvit/public-api";
 
-function Score() {
+function Score({ context }: { context: Devvit.Context }) {
   const getMatchData = async (matchDate?: string) => {
     const url = `https://statsapi.mlb.com/api/v1/schedule?sportId=1&season=2025&date=${matchDate}`;
 
@@ -53,11 +53,9 @@ function Score() {
             const formattedDate = [
               currentYear,
               currentMonth.padStart(2, "0"),
-              String(Number(currentDate)).padStart(2, "0"),
+              String(Number(currentDate) - 1).padStart(2, "0"),
             ].join("-");
-
             const response = await getMatchData(formattedDate);
-
             webview.postMessage({
               devvitDataType: "match-info",
               devvitData: {
@@ -65,6 +63,38 @@ function Score() {
               },
             });
           }
+        } else if (message && message.type === "userRedisInfo") {
+          console.log("message type: userRedisInfo");
+          const userId = context.userId as string;
+          const applicationDataJson = (await context.redis.get(
+            "application-data"
+          )) as string;
+          const applicationData = JSON.parse(applicationDataJson);
+
+          const response = {};
+          if (!Object.keys(applicationData).length || !applicationData?.users) {
+            response["success"] = false;
+            response["errorCode"] = "no-application-data";
+            response["results"] = {};
+          }
+          if (!applicationData?.users[userId]) {
+            response["success"] = false;
+            response["errorCode"] = "no-user-data";
+            response["results"] = {};
+          }
+          console.log(response);
+          console.log(userId);
+          console.log(applicationData);
+          response["success"] = true;
+          response["errorCode"] = null;
+          response["results"] = applicationData?.users[userId];
+
+          console.log(response);
+          webview.postMessage({
+            devvitDataType: "streak-points-info",
+            devvitData: response,
+          });
+          console.log("Send the streak points data to the user");
         }
       }
     },

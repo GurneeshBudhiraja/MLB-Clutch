@@ -1,7 +1,6 @@
 import { Devvit } from "@devvit/public-api";
 import { Loading } from "./components/Loading.js";
 import Layout from "./pages/Layout.js";
-import { getTriviaQuestion } from "./utils/openAI.js";
 
 Devvit.configure({
   redis: true,

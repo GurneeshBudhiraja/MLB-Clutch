@@ -54,7 +54,7 @@ function Home({
           <text size="xxlarge" weight="bold" color="white" style="heading">
             BASEBALL TRIVIA
           </text>
-          <Score />
+          <Score context={context} />
 
           <button
             appearance="primary"

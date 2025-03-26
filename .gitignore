@@ -9,3 +9,6 @@ todo.yaml
 .env
 .DS_STORE
 webroot
+
+# The file contains script to download data from MLB
+script.js 

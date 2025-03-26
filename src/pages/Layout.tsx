@@ -1,8 +1,13 @@
-import { Devvit, useAsync, useForm, useState } from "@devvit/public-api";
+import {
+  Devvit,
+  useAsync,
+  useForm,
+  useState,
+  useWebView,
+} from "@devvit/public-api";
 import LiveScore from "./LiveScorePage.js";
 import HomePage from "./HomePage.js";
 import QuizPage from "./QuizPage.js";
-import RedditOFDPage from "./RedditOFDPage.js";
 import Home from "./Home.js";
 
 function Layout({ context }: { context: Devvit.Context }) {
