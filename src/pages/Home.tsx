@@ -10,6 +10,7 @@ function Home({
   context: Devvit.Context;
   quizSettingsForm: FormKey;
 }) {
+  // State to check if the
   const [showLeaderboard, setShowLeaderboard] = useState(false);
 
   // TODO: remove in prod
@@ -39,7 +40,7 @@ function Home({
       "140.png",
       "teamPlaceholder.png",
     ];
-    const fileLinks = {};
+    const fileLinks: Record<string, string> = {};
     const fileNames = files.map((file) => {
       const fileName = file.split(".")[0];
       const url = context.assets.getURL(`teamLogos/${file}`);
@@ -61,8 +62,8 @@ function Home({
         resizeMode="cover"
       />
 
-      {/* Header bar with trophy icon */}
       <vstack width="100%" height="100%">
+        {/* Header */}
         <hstack padding="medium" width="100%" alignment="start">
           <text
             size="xlarge"
@@ -74,7 +75,7 @@ function Home({
             MLB TRIVIA CHALLENGE
           </text>
 
-          {/* Trophy icon in top right */}
+          {/* Trophy GIF in top right */}
           <hstack alignment="end" width={"100%"} grow={true}>
             <image
               imageHeight={"60px"}

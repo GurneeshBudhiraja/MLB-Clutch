@@ -17,6 +17,7 @@ function LeaderBoard({
   /**
    * Gets the user's data from Redis
    * Gets the username and sort the user data based on the streak points
+   * Updates the `leaderboardStats` state
    * Caches the result with a minute of expiry
    */
   useAsync(
@@ -43,7 +44,6 @@ function LeaderBoard({
           const { users } = data as ApplicationData;
           const newLeaderboardStats: LeaderboardStatsType[] = [];
           for (const userId in users) {
-            // Uses the userid to get the user info
             const user = await context.reddit.getUserById(userId);
             const userName = user?.username ?? "Unknown";
             const streak = users[userId].quizStreak;
@@ -54,7 +54,7 @@ function LeaderBoard({
               progress,
             });
           }
-          newLeaderboardStats.sort((a, b) => b.streak - a.streak);
+          newLeaderboardStats.sort((a, b) => b.streak - a.streak); // Sorts in descending order
           setLeaderboardStats(newLeaderboardStats);
         }
         setLoading(false);
