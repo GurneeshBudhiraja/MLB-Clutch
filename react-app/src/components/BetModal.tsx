@@ -15,6 +15,22 @@ const BetModal = ({
   );
   const [betAmount, setBetAmount] = useState(0);
 
+  async function submitBet() {
+    console.log("Submitting post message");
+    await window.parent.postMessage(
+      {
+        type: "betsDataUpdate",
+        data: {
+          matchId: match.gamePk,
+          selectedTeam,
+          date: match.gamePk,
+          betAmount,
+        },
+      },
+      "*"
+    );
+  }
+
   return (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4">
       <div className="bg-slate-800 rounded-lg p-6 w-full max-w-md text-white">
@@ -88,7 +104,6 @@ const BetModal = ({
               <button
                 onClick={() => setBetAmount((prev) => Math.max(0, prev - 1))}
                 className="px-3 py-1 bg-slate-700 text-white rounded hover:bg-slate-600"
-                disabled={betAmount > redisUserInfo.quizStreak}
               >
                 -
               </button>
@@ -117,7 +132,14 @@ const BetModal = ({
                 +
               </button>
             </div>
-            <button>Click to save the bet</button>
+            <button
+              onClick={() => {
+                console.log("Clicking");
+                submitBet();
+              }}
+            >
+              Click to save the bet
+            </button>
           </div>
         )}
       </div>

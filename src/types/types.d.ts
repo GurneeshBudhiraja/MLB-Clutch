@@ -6,7 +6,7 @@ type TriviaLanguage = "english" | "spanish" | "japanese"
 
 type TriviaDifficulty = "easy" | "medium" | "hard";
 
-type RedisKey = "application-data"
+type RedisKey = "application-data" | "application-bets"
 
 type Progress = "positive" | "negative" | "neutral"
 

@@ -87,11 +87,12 @@ function CurrentMatches() {
                 className="relative bg-gradient-to-br from-mlb-navy/90 to-mlb-blue/90 backdrop-blur-sm rounded-xl p-5 shadow-2xl transform transition-all hover:scale-[1.02] hover:shadow-3xl border border-white/10"
                 onClick={() => {
                   console.log(match);
-                  if (match?.status?.abstractGameCode === "F") {
-                    console.log("Match has finished");
-                    console.log("no friendly betting");
-                    return;
-                  }
+                  // TODO: uncomment in prod
+                  // if (match?.status?.abstractGameCode === "F") {
+                  //   console.log("Match has finished");
+                  //   console.log("no friendly betting");
+                  //   return;
+                  // }
                   setShowBetModal(true);
                   setSelectedMatch(match);
                 }}

@@ -1,4 +1,5 @@
 import { Devvit, useAsync, useState, useWebView } from "@devvit/public-api";
+import { getRedisData, updateRedisData } from "../utils/utils.js";
 
 function Score({ context }: { context: Devvit.Context }) {
   const getMatchData = async (matchDate?: string) => {
@@ -38,6 +39,7 @@ function Score({ context }: { context: Devvit.Context }) {
     // Handle messages from web view
     onMessage: async (message, webview) => {
       if (typeof message === "object") {
+        console.log(message?.type);
         if (message && message.type === "getMatches") {
           const { data } = message;
           const { date, matchFilter } = data;
@@ -95,6 +97,38 @@ function Score({ context }: { context: Devvit.Context }) {
             devvitData: response,
           });
           console.log("Send the streak points data to the user");
+        } else if (message && message.type === "betsDataUpdate") {
+          console.log("updateBets");
+          const { data } = message;
+          const betsDataJSON = (await context.redis.get(
+            "application-bets"
+          )) as string;
+          const betsData = JSON.parse(betsDataJSON);
+          const userId = String(context.userId);
+          const currentUserBetData = betsData[userId];
+          const updatedResponse = {
+            ...betsData,
+          };
+          if (!currentUserBetData) {
+            updatedResponse[userId] = [data];
+          } else {
+            updatedResponse[userId] = [...updatedResponse[userId], { ...data }];
+          }
+          await context.redis.set(
+            "application-bets",
+            JSON.stringify(updatedResponse)
+          );
+          const newData = await context.redis.get("application-bets");
+          console.log(newData);
+
+          // TODO: implement the logic and add the `application-bets` data when the application is installed for the first time.
+          // if (!betsData) {
+          //   const reponse = await context.redis.set(
+          //     "application-bets",
+          //     JSON.stringify({})
+          //   );
+          //   console.log(reponse)
+          // }
         }
       }
     },
