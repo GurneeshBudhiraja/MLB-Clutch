@@ -23,7 +23,7 @@ const BetModal = ({
         data: {
           matchId: match.gamePk,
           selectedTeam,
-          date: match.gamePk,
+          date: match.officialDate,
           betAmount,
         },
       },

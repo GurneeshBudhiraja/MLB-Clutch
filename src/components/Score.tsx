@@ -129,6 +129,43 @@ function Score({ context }: { context: Devvit.Context }) {
           //   );
           //   console.log(reponse)
           // }
+        } else if (message && message.type === "currentUserBets") {
+          console.log("currentUserBets");
+          const userId = String(context.userId);
+          const jsonRedisData = await context.redis.get("application-bets");
+
+          const responseData = {};
+          if (!jsonRedisData) {
+            // When the data of the key named: `application-bets` is not found in the redis data
+            return {
+              success: false,
+              errorCode: "no-bets-data",
+              results: [],
+            };
+          }
+          const redisData = JSON.parse(jsonRedisData);
+          if (!Object.keys(redisData).length) {
+            // When the `application-bets` object is empty
+            responseData["success"] = false;
+            responseData["errorCode"] = "empty-bets-data";
+            responseData["results"] = [];
+          }
+          const currentUserBetData = redisData[userId];
+          if (!currentUserBetData.length) {
+            // When there is not bets data for the user id
+            responseData["success"] = false;
+            responseData["errorCode"] = "empty-user-bets-data";
+            responseData["results"] = [];
+          }
+          // when the data for the corresponding userId has been found
+          responseData["success"] = true;
+          responseData["errorCode"] = null;
+          responseData["results"] = currentUserBetData;
+          console.log(responseData);
+          webview.postMessage({
+            devvitDataType: "user-bets-info",
+            devvitData: responseData,
+          });
         }
       }
     },

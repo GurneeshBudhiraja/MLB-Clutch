@@ -12,9 +12,6 @@ export default tseslint.config(
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,
-      parserOptions: {
-        sourceType: "module",
-      },
     },
     plugins: {
       "react-hooks": reactHooks,
@@ -26,18 +23,6 @@ export default tseslint.config(
         "warn",
         { allowConstantExport: true },
       ],
-      "no-unused-vars": "warn", // Warn about unused variables
-      "@typescript-eslint/no-unused-vars": [
-        "warn",
-        {
-          argsIgnorePattern: "^_",
-          varsIgnorePattern: "^_",
-          ignoreRestSiblings: true,
-        },
-      ],
-      "no-undef": "error", // Error on undefined variables
-      "@typescript-eslint/no-explicit-any": "off", // Warn about usage of 'any' type
-      "@typescript-eslint/explicit-module-boundary-types": "off", // Allow implicit return types
     },
   }
 );
