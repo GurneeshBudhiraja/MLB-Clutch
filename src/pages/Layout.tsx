@@ -11,14 +11,18 @@ import QuizPage from "./QuizPage.js";
 import Home from "./Home.js";
 
 function Layout({ context }: { context: Devvit.Context }) {
-  // Current page
+  // State to keep track which page to show
   const [currentPage, setCurrentPage] = useState<CurrentPageType>("home");
 
-  // Quiz settings
+  // State for the quiz settings
   const [quizSettings, setQuizSettings] = useState<TriviaSettings>({
     language: "english",
   });
 
+  /**
+   * Form to allow users to select the language of the quiz
+   * Supported Languages: English, Japanese, or Spanish
+   */
   const quizSettingsForm = useForm(
     {
       title: "Quiz Settings",
@@ -51,10 +55,11 @@ function Layout({ context }: { context: Devvit.Context }) {
       cancelLabel: "Go Back",
     },
     async (values) => {
-      console.log("Language:", values.language[0]);
+      // Updates the language in the quizSettings state
       setQuizSettings({
         language: values.language[0] as TriviaLanguage,
       });
+      // Updates the state to render the quiz content
       setCurrentPage("quiz");
     }
   );
