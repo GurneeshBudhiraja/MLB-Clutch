@@ -2,12 +2,18 @@ import { Devvit } from "@devvit/public-api";
 import { Loading } from "./components/Loading.js";
 import Layout from "./pages/Layout.js";
 
+/**
+ * Configuration to use the various Devvit APIs
+ */
 Devvit.configure({
   redis: true,
   http: true,
   redditAPI: true,
 });
 
+/**
+ * Settings to use the openAI key
+ */
 Devvit.addSettings([
   {
     name: "open-ai-api-key",
@@ -18,13 +24,19 @@ Devvit.addSettings([
   },
 ]);
 
-// Renders the required page
+/**
+ * The `Layout` component decides which screen to render on the Devvit application
+ */
 Devvit.addCustomPostType({
   name: "MLB Clutch Post",
   height: "tall",
   render: (context) => <Layout context={context} />,
 });
 
+/**
+ * Adds the menu option to add the post.
+ * Only allowed for moderators
+ */
 Devvit.addMenuItem({
   location: "subreddit",
   forUserType: "moderator",
@@ -47,13 +59,19 @@ Devvit.addMenuItem({
 Devvit.addTrigger({
   event: "AppInstall",
   onEvent: async (_, context) => {
-    console.log("app has been installed for the very first time");
+    console.log("App has been installed for the very first time");
     try {
-      const applicationData: ApplicationData = { users: {} };
+      /**
+       * Creates and stores the empty users object on the installation of the application in the Redis db
+       */
       await context.redis.set(
         "application-data",
-        JSON.stringify(applicationData)
+        JSON.stringify({ users: {} })
       );
+      /**
+       * Creates and stores the empty `application-bets` object on the installation of the application in the Redis db
+       */
+      await context.redis.set("application-bets", JSON.stringify({}));
       console.log(
         "Basic redis data has been set after the installation of the application"
       );

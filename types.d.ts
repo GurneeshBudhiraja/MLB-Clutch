@@ -1,5 +1,3 @@
-
-
 type CurrentPageType = "home" | "quiz" | "redditOfTheDay" | "leaderboard";
 
 type TriviaLanguage = "english" | "spanish" | "japanese"

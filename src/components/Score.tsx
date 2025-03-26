@@ -120,15 +120,6 @@ function Score({ context }: { context: Devvit.Context }) {
           );
           const newData = await context.redis.get("application-bets");
           console.log(newData);
-
-          // TODO: implement the logic and add the `application-bets` data when the application is installed for the first time.
-          // if (!betsData) {
-          //   const reponse = await context.redis.set(
-          //     "application-bets",
-          //     JSON.stringify({})
-          //   );
-          //   console.log(reponse)
-          // }
         } else if (message && message.type === "currentUserBets") {
           console.log("currentUserBets");
           const userId = String(context.userId);
