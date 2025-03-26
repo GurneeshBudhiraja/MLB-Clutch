@@ -21,16 +21,24 @@ function Score({ context }: { context: Devvit.Context }) {
 
     const liveResult = await response.json();
 
-    // Check if we have valid data
-    if (!liveResult.dates || liveResult.dates.length === 0) {
-      return { success: false, errorCode: "invalid-data", results: [] };
+    // checks if there are any games scheduled for today
+    if (liveResult.totalGames === 0) {
+      return { success: true, errorCode: "no-scheduled-matches", results: [] };
+    } else if (liveResult.totalGames) {
+      if (!liveResult.dates.length) {
+        return {
+          success: false,
+          errorCode: "fetch-error",
+          results: [],
+        };
+      } else {
+        return {
+          success: true,
+          errorCode: null,
+          results: liveResult?.dates[0]?.games ?? [],
+        };
+      }
     }
-
-    return {
-      success: true,
-      errorCode: null,
-      results: liveResult?.dates[0]?.games ?? [],
-    };
   };
 
   const { mount } = useWebView({
@@ -42,29 +50,17 @@ function Score({ context }: { context: Devvit.Context }) {
         console.log(message?.type);
         if (message && message.type === "getMatches") {
           const { data } = message;
+          console.log(data);
           const { date, matchFilter } = data;
 
-          if (date === "currentDate") {
-            // Gets the current date
-            const date = new Date();
-            let [currentMonth, currentDate, currentYear] = date
-              .toLocaleDateString()
-              .split("/") as [string, string, string];
-
-            // Properly format the date with padding
-            const formattedDate = [
-              currentYear,
-              currentMonth.padStart(2, "0"),
-              String(Number(currentDate) - 1).padStart(2, "0"),
-            ].join("-");
-            const response = await getMatchData(formattedDate);
-            webview.postMessage({
-              devvitDataType: "match-info",
-              devvitData: {
-                ...response,
-              },
-            });
-          }
+          console.log(date);
+          const response = await getMatchData(date);
+          webview.postMessage({
+            devvitDataType: "match-info",
+            devvitData: {
+              ...response,
+            },
+          });
         } else if (message && message.type === "userRedisInfo") {
           console.log("message type: userRedisInfo");
           const userId = context.userId as string;

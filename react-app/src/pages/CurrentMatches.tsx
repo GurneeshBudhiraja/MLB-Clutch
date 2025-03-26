@@ -1,16 +1,26 @@
 // TODOD: fix the type issue later on
 import React, { useEffect, useState } from "react";
 import BetModal from "../components/BetModal";
+import DatePicker from "../components/DatePicker";
 
 function CurrentMatches({ assetsLinks }: { assetsLinks: AssetLinks }) {
   const [mlbMatches, setMLBMatches] = React.useState<Game[]>([]);
   // @ts-ignore
-  const [date, setDate] = useState<string>("currentDate");
+  const [date, setDate] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [showBetModal, setShowBetModal] = useState<boolean>(false);
   const [selectedMatch, setSelectedMatch] = useState<Record<string, any>>({});
   const [redisUserInfo, setRedisUserInfo] = useState<Record<string, any>>({});
+
   useEffect(() => {
+    if (!date) {
+      const newDate = new Date();
+      const [month, date, year] = newDate
+        .toLocaleDateString()
+        .split("/") as string[];
+      const currentDate = [year, month.padStart(2, "0"), date].join("-");
+      setDate(currentDate);
+    }
     setLoading(true);
 
     // Gets the streak points from the Devvit
@@ -56,12 +66,12 @@ function CurrentMatches({ assetsLinks }: { assetsLinks: AssetLinks }) {
       }
       setLoading(false);
     });
-
     return () => setLoading(true);
   }, []);
 
   useEffect(() => {
-    // This is to send message to Devvit app to get the matches info happening at the present moment
+    setLoading(true);
+    // Gets the live matches result from the Devvit
     window.parent.postMessage(
       {
         type: "getMatches",
@@ -73,9 +83,9 @@ function CurrentMatches({ assetsLinks }: { assetsLinks: AssetLinks }) {
       "*"
     );
   }, [date]);
-  
   return (
     <div className="p-4 relative h-full">
+      <DatePicker setDate={setDate} />
       {loading && (
         <div className="flex justify-center items-center h-full">
           <img
