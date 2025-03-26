@@ -2,7 +2,11 @@
 import React, { useEffect, useState } from "react";
 import BetModal from "../components/BetModal";
 
-function CurrentMatches() {
+function CurrentMatches({
+  teamLogoLinks,
+}: {
+  teamLogoLinks: Record<string, string>;
+}) {
   const [mlbMatches, setMLBMatches] = React.useState<Game[]>([]);
   // @ts-ignore
   const [date, setDate] = useState<string>("currentDate");
@@ -114,7 +118,10 @@ function CurrentMatches() {
                   <div className="flex-1 flex flex-col items-center">
                     <div className="relative w-20 h-20 mb-3">
                       <img
-                        src={"https://i.redd.it/22j4630f4xqe1.png"}
+                        src={
+                          teamLogoLinks[String(awayTeam.team.id)] ??
+                          teamLogoLinks["teamPlaceholder"]
+                        }
                         alt={awayTeam.team.name}
                         className="w-full h-full object-contain drop-shadow-lg"
                       />
@@ -151,7 +158,10 @@ function CurrentMatches() {
                   <div className="flex-1 flex flex-col items-center">
                     <div className="relative w-20 h-20 mb-3">
                       <img
-                        src={""}
+                        src={
+                          teamLogoLinks[String(homeTeam.team.id)] ??
+                          teamLogoLinks["teamPlaceholder"]
+                        }
                         alt={homeTeam.team.name}
                         className="w-full h-full object-contain drop-shadow-lg"
                       />
