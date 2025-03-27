@@ -43,7 +43,7 @@ function App() {
     leaderboard: "https://i.redd.it/uyo7vm2dwjqe1.gif",
   };
 
-  const playerLinks: Record<string | "placeholderHeadshot", string> = {
+  const playersHeadshots: Record<string | "placeholderHeadshot", string> = {
     aaronJudge: "https://i.redd.it/pf1ybpy7z7re1.jpeg",
     adleyRutschman: "https://i.redd.it/fzncxdhi08re1.jpeg",
     andrewBenintendi: "https://i.redd.it/viwkvnvqy7re1.jpeg",
@@ -146,7 +146,7 @@ function App() {
         <CurrentMatches assetsLinks={assetsLinks} />
       )}
       {currentPage === "bets" && <UserBets />}
-      {currentPage === "trivia" && <TriviaShowdown assetsLinks={assetsLinks} />}
+      {currentPage === "trivia" && <TriviaShowdown assetsLinks={assetsLinks} playersHeadshots={playersHeadshots} />}
     </div>
   );
 }

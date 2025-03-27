@@ -655,9 +655,7 @@ function CurrentMatches({ assetsLinks }: { assetsLinks: AssetLinks }) {
           }
         }
       }
-      setTimeout(() => {
-        setLoading(false);
-      }, 1000);
+      setLoading(false);
     });
     return () => setLoading(true);
   }, []);

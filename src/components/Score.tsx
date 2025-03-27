@@ -236,6 +236,13 @@ function Score({ context }: { context: Devvit.Context }) {
             devvitData: response,
           });
           return;
+        } else if (message && message.type === "getTriviaQuestion") {
+          console.log("getTriviaQuestion");
+          const { data } = message;
+          console.log(data); // TODO: remove in production
+          const { category } = data;
+          console.log("selected question category:");
+          console.log(category);
         }
       }
     },

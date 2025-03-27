@@ -1,6 +1,14 @@
 import { useEffect, useState } from "react";
-function TriviaShowdown({ assetsLinks }: { assetsLinks: AssetLinks }) {
-  const [loading, setLoading] = useState<boolean>(true);
+function TriviaShowdown({
+  assetsLinks,
+  // @ts-ignore
+  playersHeadshots,
+}: {
+  assetsLinks: AssetLinks;
+  playersHeadshots: Record<string | "placeholderHeadshot", string>;
+}) {
+  const [loading, setLoading] = useState<boolean>(false);
+  // @ts-ignore
   const [userStreakData, setUserStreakData] = useState<{
     progress: Progress;
     quizStreak: number;
@@ -27,6 +35,21 @@ function TriviaShowdown({ assetsLinks }: { assetsLinks: AssetLinks }) {
       setLoading(false);
     });
   }, []);
+
+  const getTriviaQuestion = () => {
+    const category = ["triviaQuestion", "playerGuess"];
+    const categoryChoice = category[Math.floor(Math.random() * 2)];
+    console.log(categoryChoice);
+    window.parent.postMessage(
+      {
+        type: "getTriviaQuestion",
+        data: {
+          category: categoryChoice,
+        },
+      },
+      "*"
+    );
+  };
   return (
     <div className="p-4 relative h-full">
       {loading && (
@@ -38,13 +61,12 @@ function TriviaShowdown({ assetsLinks }: { assetsLinks: AssetLinks }) {
           />
         </div>
       )}
-      {/* {!loading && (
+      {!loading && (
         <>
-          <div>{userStreakData["progress"]}</div>
-          <div>{userStreakData["quizStreak"]}</div>
+          <button onClick={getTriviaQuestion}>Load the question</button>
         </>
       )}
-      <button onClick={() => console.log(userStreakData)}>Click </button> */}
+      <button onClick={() => console.log(userStreakData)}>Click </button>
     </div>
   );
 }
