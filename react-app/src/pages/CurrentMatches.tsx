@@ -811,11 +811,13 @@ function CurrentMatches({ assetsLinks }: { assetsLinks: AssetLinks }) {
             />
           )}
         </>
-      ) : (
+      ) : !loading ? (
         <NoScheduledMatches
           text="No Games Today"
           subText="Check back tomorrow for more MLB action!"
         />
+      ) : (
+        <></>
       )}
     </div>
   );

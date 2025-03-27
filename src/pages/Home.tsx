@@ -1,18 +1,10 @@
 // TODO: redesign the homepage.
-import { Devvit, FormKey, useState } from "@devvit/public-api";
+import { Devvit, useState } from "@devvit/public-api";
 import LeaderBoard from "../components/LeaderBoard.js";
-import { getTriviaQuestion } from "../utils/openAI.js";
 import Score from "../components/Score.js";
-import { webview } from "motion/react-client";
 
-function Home({
-  context,
-  quizSettingsForm,
-}: {
-  context: Devvit.Context;
-  quizSettingsForm: FormKey;
-}) {
-  // State to check if the
+function Home({ context }: { context: Devvit.Context }) {
+  // State to manage the leaderboard page
   const [showLeaderboard, setShowLeaderboard] = useState(false);
 
   // TODO: remove in prod
@@ -209,16 +201,6 @@ function Home({
       <vstack width="100%" height="100%">
         {/* Header */}
         <hstack padding="medium" width="100%" alignment="start">
-          <text
-            size="xlarge"
-            weight="bold"
-            color="white"
-            style="heading"
-            alignment="start"
-          >
-            MLB TRIVIA CHALLENGE
-          </text>
-
           {/* Trophy GIF in top right */}
           <hstack alignment="end" width={"100%"} grow={true}>
             <image
@@ -232,36 +214,15 @@ function Home({
         </hstack>
 
         {/* Main content area */}
-        <vstack grow alignment="middle center" gap="large">
-          {/* TODO: remove in prod */}
-          <button onPress={() => getRedditLinks()}>Click</button>
+        <vstack grow alignment="middle center" gap="small">
           <text size="xxlarge" weight="bold" color="white" style="heading">
-            BASEBALL TRIVIA
+            ⚾ MLB Clutch
+          </text>
+          <text size="large" weight="bold" color="white" style="heading">
+            Step up to the plate — test your MLB knowledge and prediction
+            streaks!
           </text>
           <Score context={context} />
-
-          <button
-            appearance="primary"
-            size="large"
-            onPress={() => {
-              context.ui.showForm(quizSettingsForm);
-            }}
-          >
-            ULTIMATE STREAK MODE
-          </button>
-          <button
-            appearance="bordered"
-            textColor="white"
-            onPress={async (data) => {
-              const applicationDataJson = await context.redis.get(
-                "application-data"
-              );
-              console.log("application-data is:");
-              console.log(applicationDataJson);
-            }}
-          >
-            Check Stats
-          </button>
         </vstack>
       </vstack>
 

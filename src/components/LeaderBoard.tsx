@@ -1,8 +1,7 @@
 import { Devvit, StateSetter, useAsync, useState } from "@devvit/public-api";
-import { getRedisData } from "../utils/utils.js";
 import { Loading } from "./Loading.js";
 
-function LeaderBoard({
+export default function LeaderBoard({
   setShowLeaderboard,
   context,
 }: {
@@ -201,4 +200,22 @@ function LeaderBoard({
   );
 }
 
-export default LeaderBoard;
+// Gets the data from the Redis
+export async function getRedisData(
+  context: Devvit.Context,
+  redisKey: RedisKey
+): Promise<boolean | ApplicationData> {
+  try {
+    const jsonRedisData = await context.redis.get(redisKey);
+    if (!jsonRedisData) {
+      console.log(`Not able to find any data related to ${redisKey}`);
+      return false;
+    }
+    const redisData = JSON.parse(jsonRedisData);
+    return redisData;
+  } catch (error) {
+    console.log("Error in getting redis data");
+    console.log(error);
+    return false;
+  }
+}

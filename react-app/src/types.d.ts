@@ -104,3 +104,17 @@ type AllGameCard = {
 
 
 type Progress = "positive" | "negative" | "neutral"
+
+type TriviaQuestionCategory = "triviaQuestion" | "playerGuess"
+type TriviaLanguage = "english" | "spanish" | "japanese"
+
+
+type PageStateType = {
+  gameStarted: boolean;
+  gameLanguage: TriviaLanguage | "";
+  isTimer: boolean;
+  timer: number;
+  questionLoading: boolean;
+  questionCategory: TriviaQuestionCategory | "";
+  correctAnswer: number;
+}

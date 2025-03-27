@@ -1,5 +1,4 @@
-import { Devvit, useAsync, useState, useWebView } from "@devvit/public-api";
-import { getRedisData, updateRedisData } from "../utils/utils.js";
+import { Devvit, useWebView } from "@devvit/public-api";
 import { getPlayerFact, getTriviaQuestion } from "../utils/openAI.js";
 
 function Score({ context }: { context: Devvit.Context }) {
@@ -242,11 +241,7 @@ function Score({ context }: { context: Devvit.Context }) {
           const { data } = message;
           console.log(data); // TODO: remove in production
 
-          // TODO: remove in production
-          const languages = ["english", "spanish", "japanese"];
-          const randomeLanguage = languages[Math.floor(Math.random() * 3)];
-
-          const { category, language = randomeLanguage } = data;
+          const { category, language = "english" } = data;
           // const { category, language = "english" } = data;
           console.log("selected question category:");
           console.log(category);
@@ -437,8 +432,15 @@ function Score({ context }: { context: Devvit.Context }) {
   });
 
   return (
-    <vstack width="100%" gap="medium" padding="medium" onPress={mount}>
-      Get Live Updates
+    <vstack gap="medium" padding="medium" onPress={mount}>
+      <button
+        appearance="bordered"
+        lightTextColor="white"
+        darkTextColor="white"
+      >
+        {" "}
+        🚀 Play Now
+      </button>
     </vstack>
   );
 }
