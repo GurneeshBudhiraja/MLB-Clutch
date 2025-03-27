@@ -153,6 +153,50 @@ function Score({ context }: { context: Devvit.Context }) {
             devvitDataType: "user-bets-info",
             devvitData: responseData,
           });
+        } else if (message && message.type === "matchInfoUsingGamePk") {
+          console.log("currentUserBets");
+          const { data } = message;
+          console.log(data); // TODO: remove in production
+          const { gamePk } = data;
+          console.log(gamePk); // TODO: remove in production
+          const JSONRepsonse = await fetch(
+            `https://statsapi.mlb.com/api/v1.1/game/${String(gamePk)}/feed/live`
+          );
+          if (!JSONRepsonse.ok) {
+            webview.postMessage({
+              devvitDataType: "match-info-from-gamepk",
+              devvitData: {
+                success: false,
+                results: [],
+                error: "failure-in-api-request",
+              },
+            });
+            return;
+          }
+          const response = await JSONRepsonse.json();
+
+          const matchData = response.gameData;
+
+          if (!matchData || !Object.keys(matchData).length) {
+            webview.postMessage({
+              devvitDataType: "match-info-from-gamepk",
+              devvitData: {
+                success: false,
+                results: [],
+                error: "no-match-data",
+              },
+            });
+            return;
+          }
+          webview.postMessage({
+            devvitDataType: "match-info-from-gamepk",
+            devvitData: {
+              success: true,
+              results: matchData,
+              error: null,
+            },
+          });
+          return;
         }
       }
     },

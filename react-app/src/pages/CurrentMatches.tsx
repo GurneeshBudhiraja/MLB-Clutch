@@ -595,6 +595,7 @@ import AllGameCard from "../components/AllGameCard";
 
 function CurrentMatches({ assetsLinks }: { assetsLinks: AssetLinks }) {
   const [mlbMatches, setMLBMatches] = React.useState<Game[]>([]);
+  // const [mlbMatches, setMLBMatches] = React.useState<Game[]>(matches);
   const [date, setDate] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [showBetModal, setShowBetModal] = useState<boolean>(false);
@@ -708,7 +709,7 @@ function CurrentMatches({ assetsLinks }: { assetsLinks: AssetLinks }) {
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.4 }}
             >
-              <div className="flex items-center gap-4 my-4 max-w-xl md:max-w-6xl mx-auto">
+              <div className="flex items-center gap-4 mt-2 max-w-xl md:max-w-6xl mx-auto">
                 <span className="h-[1px] bg-gray-500 flex-grow" />
                 <div className="text-gray-300 font-medium">Ongoing Matches</div>
                 <span className="h-[1px] bg-gray-500 flex-grow" />
@@ -760,43 +761,53 @@ function CurrentMatches({ assetsLinks }: { assetsLinks: AssetLinks }) {
           {/**
            * Shows all the matches for the selected date
            * */}
-          <div className="max-w-xl md:max-w-6xl mx-auto">
-            <div className="flex items-center gap-4 my-4">
-              <span className="h-[1px] bg-gray-500 flex-grow" />
-              <div className="text-gray-300 font-medium">All Matches</div>
-              <span className="h-[1px] bg-gray-500 flex-grow" />
+          {!showBetModal && (
+            <div className="max-w-xl md:max-w-6xl mx-auto">
+              <div className="flex items-center gap-4 my-4">
+                <span className="h-[1px] bg-gray-500 flex-grow" />
+                <div className="text-gray-300 font-medium">All Matches</div>
+                <span className="h-[1px] bg-gray-500 flex-grow" />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                {mlbMatches.map((match, index) => (
+                  <AllGameCard
+                    onClick={() => {
+                      setSelectedMatch(match.gamePk);
+                      setShowBetModal(true);
+                    }}
+                    key={index}
+                    gamePk={match.gamePk}
+                    awayTeamName={match.teams.away.team.name}
+                    awayTeamURL={
+                      assetsLinks[
+                        String(
+                          match.teams.away.team.id
+                        ) as AssertLinksProperties
+                      ] ?? assetsLinks["teamPlaceholder"]
+                    }
+                    homeTeamName={match.teams.home.team.name}
+                    homeTeamURL={
+                      assetsLinks[
+                        String(
+                          match.teams.home.team.id
+                        ) as AssertLinksProperties
+                      ] ?? assetsLinks["teamPlaceholder"]
+                    }
+                    seriesDescription={match.seriesDescription}
+                    status={match.status.detailedState}
+                    officialDate={match.officialDate}
+                    venue={match.venue.name}
+                  />
+                ))}
+              </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              {mlbMatches.map((match, index) => (
-                <AllGameCard
-                  onClick={() => setSelectedMatch(match.gamePk)}
-                  key={index}
-                  gamePk={match.gamePk}
-                  awayTeamName={match.teams.away.team.name}
-                  awayTeamURL={
-                    assetsLinks[
-                      String(match.teams.away.team.id) as AssertLinksProperties
-                    ] ?? assetsLinks["teamPlaceholder"]
-                  }
-                  homeTeamName={match.teams.home.team.name}
-                  homeTeamURL={
-                    assetsLinks[
-                      String(match.teams.home.team.id) as AssertLinksProperties
-                    ] ?? assetsLinks["teamPlaceholder"]
-                  }
-                  seriesDescription={match.seriesDescription}
-                  status={match.status.detailedState}
-                  officialDate={match.officialDate}
-                  venue={match.venue.name}
-                />
-              ))}
-            </div>
-          </div>
+          )}
           {showBetModal && (
             <BetModal
-              match={selectedMatch}
+              gamePk={selectedMatch}
               setShowBetModal={setShowBetModal}
               redisUserInfo={redisUserInfo}
+              assetLinks={assetsLinks}
             />
           )}
         </>
@@ -810,6 +821,7 @@ function CurrentMatches({ assetsLinks }: { assetsLinks: AssetLinks }) {
   );
 }
 
+// Placeholder div when no data is available
 function NoScheduledMatches({
   text,
   subText,
