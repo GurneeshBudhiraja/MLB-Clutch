@@ -594,13 +594,13 @@ import AllGameCard from "../components/AllGameCard";
 // ];
 
 function CurrentMatches({ assetsLinks }: { assetsLinks: AssetLinks }) {
-  // const [mlbMatches, setMLBMatches] = React.useState<Game[]>(matches);
   const [mlbMatches, setMLBMatches] = React.useState<Game[]>([]);
   const [date, setDate] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
   const [showBetModal, setShowBetModal] = useState<boolean>(false);
   const [selectedMatch, setSelectedMatch] = useState<number>(-1);
   const [redisUserInfo, setRedisUserInfo] = useState<Record<string, any>>({});
+  const [liveMatches, setLiveMatches] = useState<any>([]);
 
   useEffect(() => {
     if (!date) {
@@ -674,6 +674,12 @@ function CurrentMatches({ assetsLinks }: { assetsLinks: AssetLinks }) {
     );
   }, [date]);
 
+  useEffect(() => {
+    setLiveMatches(
+      mlbMatches.filter((match) => match.status.statusCode === "I")
+    );
+  }, [mlbMatches]);
+
   return (
     <div className="p-4 relative h-full ">
       <div className="w-full flex justify-end">
@@ -696,52 +702,57 @@ function CurrentMatches({ assetsLinks }: { assetsLinks: AssetLinks }) {
              * Shows the live matches
              */
             <motion.div
-              className=" max-w-5xl mx-auto justify-center items-center mb-10"
+              className="max-w-5xl mx-auto justify-center items-center mb-10"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.4 }}
             >
-              <div className="flex items-center gap-4 my-4 ">
+              <div className="flex items-center gap-4 my-4 max-w-xl md:max-w-6xl mx-auto">
                 <span className="h-[1px] bg-gray-500 flex-grow" />
                 <div className="text-gray-300 font-medium">Ongoing Matches</div>
                 <span className="h-[1px] bg-gray-500 flex-grow" />
               </div>
 
               <div className="mb-4 w-full overflow-x-auto snap-x snap-mandatory flex gap-3 scroll-smooth px-2 no-scrollbar">
-                {mlbMatches.map((match) => {
-                  const awayTeam = match.teams.away;
-                  const homeTeam = match.teams.home;
-                  const isFinal = match.status.statusCode === "I";
-                  if (!isFinal) return;
+                {liveMatches.length ? (
+                  liveMatches.map((match: Game) => {
+                    const awayTeam = match.teams.away;
+                    const homeTeam = match.teams.home;
 
-                  return (
-                    <LiveGameCard
-                      key={match.gamePk}
-                      gamePk={match.gamePk}
-                      detailedState={match.status.detailedState}
-                      awayTeamURL={
-                        assetsLinks[
-                          String(awayTeam.team.id) as AssertLinksProperties
-                        ]
-                      }
-                      awayTeamScore={awayTeam.score}
-                      awayTeamName={awayTeam.team.name}
-                      homeTeamURL={
-                        assetsLinks[
-                          String(homeTeam.team.id) as AssertLinksProperties
-                        ]
-                      }
-                      homeTeamName={homeTeam.team.name}
-                      homeTeamScore={homeTeam.score}
-                      isHomeTeamWinner={homeTeam.isWinner}
-                      gameDate={match.gameDate}
-                      seriesDescription={match.seriesDescription ?? ""}
-                      timeOfTheDay={match.dayNight}
-                      venueName={match.venue.name}
-                    />
-                  );
-                })}
+                    return (
+                      <LiveGameCard
+                        key={match.gamePk}
+                        gamePk={match.gamePk}
+                        detailedState={match.status.detailedState}
+                        awayTeamURL={
+                          assetsLinks[
+                            String(awayTeam.team.id) as AssertLinksProperties
+                          ]
+                        }
+                        awayTeamScore={awayTeam.score}
+                        awayTeamName={awayTeam.team.name}
+                        homeTeamURL={
+                          assetsLinks[
+                            String(homeTeam.team.id) as AssertLinksProperties
+                          ]
+                        }
+                        homeTeamName={homeTeam.team.name}
+                        homeTeamScore={homeTeam.score}
+                        isHomeTeamWinner={homeTeam.isWinner}
+                        gameDate={match.gameDate}
+                        seriesDescription={match.seriesDescription ?? ""}
+                        timeOfTheDay={match.dayNight}
+                        venueName={match.venue.name}
+                      />
+                    );
+                  })
+                ) : (
+                  <NoScheduledMatches
+                    text="No Live Matches"
+                    subText="Catch the action once the games go live!"
+                  />
+                )}
               </div>
             </motion.div>
           }
@@ -790,24 +801,33 @@ function CurrentMatches({ assetsLinks }: { assetsLinks: AssetLinks }) {
           )}
         </>
       ) : (
-        <NoScheduledMatches />
+        <NoScheduledMatches
+          text="No Games Today"
+          subText="Check back tomorrow for more MLB action!"
+        />
       )}
     </div>
   );
 }
 
-function NoScheduledMatches() {
+function NoScheduledMatches({
+  text,
+  subText,
+}: {
+  text: string;
+  subText: string;
+}) {
   /**
    * Component to render when there are no matches scheduled
    */
   return (
     <motion.div
-      className="w-full border border-theme-white border-dashed rounded-lg p-4 text-center text-theme-white opacity-80 max-w-lg mx-auto mt-10"
+      className="w-full border border-theme-white border-dashed rounded-lg p-4 text-center text-theme-white opacity-80 max-w-lg mx-auto mt-2"
       initial={{ opacity: 0, y: 50 }}
       animate={{ opacity: 1, y: 0 }}
     >
-      <p className="text-lg font-semibold">No Games Today</p>
-      <p className="text-sm mt-1">Check back tomorrow for more MLB action!</p>
+      <p className="text-lg font-semibold">{text}</p>
+      <p className="text-sm mt-1">{subText}</p>
     </motion.div>
   );
 }
