@@ -246,8 +246,8 @@ function Score({ context }: { context: Devvit.Context }) {
           const languages = ["english", "spanish", "japanese"];
           const randomeLanguage = languages[Math.floor(Math.random() * 3)];
 
-          // const { category, language = randomeLanguage } = data;
-          const { category, language = "english" } = data;
+          const { category, language = randomeLanguage } = data;
+          // const { category, language = "english" } = data;
           console.log("selected question category:");
           console.log(category);
           // ["triviaQuestion", "playerGuess"]

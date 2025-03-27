@@ -43,7 +43,10 @@ function TriviaShowdown({
 
   const getTriviaQuestion = () => {
     const category = ["triviaQuestion", "playerGuess"];
-    const categoryChoice = category[Math.floor(Math.random() * 2)];
+
+    // Random categoryChoice from the category list
+    const categoryChoice =
+      category[(Math.floor(Math.random() * 2) + Date.now()) % 2];
     console.log(categoryChoice);
     window.parent.postMessage(
       {
