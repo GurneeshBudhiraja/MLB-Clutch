@@ -48,6 +48,14 @@ type AssertLinksProperties =
   "138" |
   "139" |
   "140" |
+  "141" |
+  "142" |
+  "143" |
+  "144" |
+  "145" |
+  "146" |
+  "147" |
+  "158" |
   "teamPlaceholder"
 
 

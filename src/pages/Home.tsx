@@ -50,14 +50,47 @@ function Home({
   //   console.log(fileLinks);
   // };
   const getRedditLinks = async () => {
-    const files = ["loader.gif", "fire-flame.gif", "leaderboard.gif"];
+    const files = [
+      "108.png",
+      "109.png",
+      "110.png",
+      "111.png",
+      "112.png",
+      "113.png",
+      "114.png",
+      "115.png",
+      "116.png",
+      "117.png",
+      "118.png",
+      "119.png",
+      "120.png",
+      "121.png",
+      "133.png",
+      "134.png",
+      "135.png",
+      "136.png",
+      "137.png",
+      "138.png",
+      "139.png",
+      "140.png",
+      "141.png",
+      "142.png",
+      "143.png",
+      "144.png",
+      "145.png",
+      "146.png",
+      "147.png",
+      "158.png",
+      "teamPlaceholder.png",
+    ];
     const fileLinks: Record<string, string> = {};
     const fileNames = files.map((file) => {
       const fileName = file.split(".")[0];
-      const url = context.assets.getURL(`${file}`);
+      const url = context.assets.getURL(`teamLogos/${file}`);
       fileLinks[fileName] = url;
     });
     console.log(fileLinks);
+    console.log(Object.keys(fileLinks).length);
   };
 
   return (

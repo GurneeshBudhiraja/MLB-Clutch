@@ -6,9 +6,6 @@ import UserBets from "./pages/UserBets";
 function App() {
   const [currentPage, setCurrentPage] = useState<CurrentPage>("currentMatches");
   const assetsLinks: AssetLinks = {
-    loader: "https://i.redd.it/wrrgcv1e6ppe1.gif",
-    "fire-flame": "https://i.redd.it/b9z995x0ebqe1.gif",
-    leaderboard: "https://i.redd.it/uyo7vm2dwjqe1.gif",
     "108": "https://i.redd.it/22j4630f4xqe1.png",
     "109": "https://i.redd.it/0kt6hlhnsyqe1.png",
     "110": "https://i.redd.it/fjgsy3hnsyqe1.png",
@@ -31,7 +28,18 @@ function App() {
     "138": "https://i.redd.it/5hznbtknsyqe1.png",
     "139": "https://i.redd.it/1dh21zknsyqe1.png",
     "140": "https://i.redd.it/qo53ecmnsyqe1.png",
+    "141": "https://i.redd.it/hgop7f7bp4re1.png",
+    "142": "https://i.redd.it/cxi1wv8bp4re1.png",
+    "143": "https://i.redd.it/3ciufi8bp4re1.png",
+    "144": "https://i.redd.it/yywu6b8bp4re1.png",
+    "145": "https://i.redd.it/u6c5jx8bp4re1.png",
+    "146": "https://i.redd.it/wzm6988bp4re1.png",
+    "147": "https://i.redd.it/d60g8v9bp4re1.png",
+    "158": "https://i.redd.it/fg6zsl8bp4re1.png",
     teamPlaceholder: "https://i.redd.it/o3b57u73zyqe1.png",
+    loader: "https://i.redd.it/wrrgcv1e6ppe1.gif",
+    "fire-flame": "https://i.redd.it/b9z995x0ebqe1.gif",
+    leaderboard: "https://i.redd.it/uyo7vm2dwjqe1.gif",
   };
 
   return (
