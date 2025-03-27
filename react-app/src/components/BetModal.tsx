@@ -255,10 +255,12 @@ const BetModal = ({
 
           {/* Betting Controls */}
           {selectedTeam && (
-            <div className="space-y-4">
-              <div className="flex items-center justify-center gap-4">
-                {/* ... (existing betting controls) ... */}
-              </div>
+            <div
+              className="flex items-center justify-center w-full bg-theme-white border border-theme-red text-theme-blue py-2 rounded-full  "
+              onClick={() => console.log(selectedTeam)}
+            >
+              Poll
+              {/* ... (existing betting controls) ... */}
             </div>
           )}
         </motion.div>

@@ -19,17 +19,15 @@ export function randomSelection(selectionChoice: "topic" | "questionLength" | "d
 }
 
 
-export async function getTriviaQuestion(apiKey: string, language: TriviaLanguage = "english", model: string = "gpt-4o"): Promise<TriviaQuestion> {
+export async function getTriviaQuestion(apiKey: string, language: TriviaLanguage = "english", model: string = "gpt-4o"): Promise<Omit<TriviaQuestion, "hint">> {
   try {
     const questionTopic = randomSelection("topic") as string;
-    const questionLength = randomSelection("questionLength") as string;
     const difficulty = randomSelection("difficulty")
     console.log("I am in getTriviaQuestion")
     console.log({
       language,
       difficulty,
       questionTopic,
-      questionLength
     })
     const openai = new OpenAI({
       apiKey
@@ -40,17 +38,17 @@ export async function getTriviaQuestion(apiKey: string, language: TriviaLanguage
         {
           role: "system",
           content:
-            `You are a trivia question generator. Provide a multiple-choice trivia question about baseball in JSON format. Ensure the format is: {question: string, options: string[], answerIndex: number, hint: string}. The answerIndex should indicate the correct answer's position in the options array. The language selected by the user is: ${language}
+            `You are a trivia question generator. Provide a multiple-choice trivia question about baseball in JSON format. Ensure the format is: {question: string, options: string[], answerIndex: number}. The answerIndex should indicate the correct answer's position in the options array. The language selected by the user is: ${language}
             Follow the below criteria for generating the question:
               1. The question should be about baseball.
               2. The question should be related to ${questionTopic} which could keep the fans engaged and entertained. 
-              3. The question should be ${difficulty}.
+              4. Please do not keep the answer index always to 0 or 1, keep switching
+              3. The question should be ${difficulty}. Additionally, keep the length of the question so that it could be read and answered by the user within 15 seconds of the time. Additionally, only provide just 2 options for the user to select. Irrespective of the difficulty, do not make it obvious for the user to get to the answer.
               4. The question is to entertain the user so keep it fun and engaging. You can use emojis wherever required but do not overkill the question with emojis.
-              6. Make sure that hints are not detiled that makes it obvious for the user to guess the answer. It should also be kept fun and engaging for the end user.
               7. Make sure the questions are unique and not repeated.
               8. In the final output, the response should not contain anything except the string which when parsed by the JSON parser of JS should give the object with the above keys. Any other text explaining or any other keywords added in the answer would cause the error. 
               9. Do not append the strings in the options array with any sort of serial numbers or alphabets.
-              10. The type of question and MCQ answer should be of ${questionLength} type.
+              10. The type of question and MCQ answer and should be enough so that the user could read and answer the question within 15 seconds. 
               11. If the language has been provided you will generate the whole output in that specific language. Make sure to keep the keys in english as that would be used to parse the output.
               12. In the final response do not add any extra text like \`\`\`json or anything that would throw an error when parsing the repsonse.
 
@@ -93,7 +91,6 @@ export async function getTriviaQuestion(apiKey: string, language: TriviaLanguage
       question: parsedData.question,
       options: parsedData.options,
       answer: parsedData.answerIndex,
-      hint: parsedData.hint,
       success: true,
     };
   } catch (error) {
@@ -103,7 +100,92 @@ export async function getTriviaQuestion(apiKey: string, language: TriviaLanguage
       options: [],
       answer: -1,
       success: false,
-      hint: "",
     };
   }
 }
+
+
+
+export async function getPlayerFact(apiKey: string, playerName: string, language: TriviaLanguage = "english", model: string = "gpt-4o"): Promise<Omit<TriviaQuestion, "hint">> {
+  try {
+    const difficulty = randomSelection("difficulty")
+    console.log("I am in getTriviaQuestion")
+    console.log({
+      language,
+      difficulty
+    })
+    const openai = new OpenAI({
+      apiKey
+    });
+    const response = await openai.chat.completions.create({
+      model,
+      messages: [
+        {
+          role: "system",
+          content:
+            `You are a trivia question generator of guessing the player. Provide a two-choice  question about the following player ${playerName} with two options for the user to gues which player is being mentioned in the JSON format. Ensure the format is: {question: string, options: string[], answerIndex: number}. The answerIndex should indicate the correct answer's position in the options array. The language selected by the user is: ${language}
+            Follow the below criteria for generating the question:
+              1. The question should be about the player that has been selected.
+              2. The question should be short that could be read withing 10 seconds. 
+              3. The question should be ${difficulty}. Even if you find the difficulty of the question still make it tricky for the user to guess. In addition to this, do not make it obvious for the user to get to the answer.
+              4. Please do not keep the answer index always to 0 or 1, keep switching
+              4. The question is to entertain the user so keep it fun and engaging. You can use emojis wherever required but do not overkill the question with emojis.
+              7. Make sure the questions are unique and not repeated.
+              8. In the final output, the response should not contain anything except the string which when parsed by the JSON parser of JS should give the object with the above keys. Any other text explaining or any other keywords added in the answer would cause the error. 
+              9. Do not append the strings in the options array with any sort of serial numbers or alphabets. I need only two items in the options array one is the correct answer and the other is wrong answer.
+              11. If the language has been provided you will generate the whole output in that specific language. Make sure to keep the keys in english as that would be used to parse the output.
+              12. In the final response do not add any extra text like \`\`\`json or anything that would throw an error when parsing the repsonse.
+
+            While generating output, takes gaps and pauses to think and analyze the final output generated by you. 
+            `,
+        },
+      ],
+      // Sets randomized temp (0-2)
+      temperature: Number((Math.random() * 2).toFixed(1)),
+    });
+
+    const content = response.choices[0]?.message?.content;
+
+    if (!content) {
+      throw new Error("No response from OpenAI API.");
+    }
+
+    const parsedData = JSON.parse(content);
+    // Validate response format
+    if (
+      !parsedData.question ||
+      !Array.isArray(parsedData.options) ||
+      typeof parsedData.answerIndex !== "number" ||
+      parsedData.answerIndex < 0 ||
+      parsedData.answerIndex >= parsedData.options.length
+    ) {
+      throw new Error("Invalid response format from OpenAI.");
+    }
+    console.log("content generated from inside guess the player openAI.ts is below: ")
+    console.log("==================")
+    console.log({
+      question: parsedData.question,
+      options: parsedData.options,
+      answer: parsedData.answerIndex,
+      success: true,
+    });
+    console.log("==================")
+    return {
+      question: parsedData.question,
+      options: parsedData.options,
+      answer: parsedData.answerIndex,
+      success: true,
+    };
+  } catch (error) {
+    console.error("Error fetching trivia question:", error);
+    return {
+      question: "",
+      options: [],
+      answer: -1,
+      success: false,
+    };
+  }
+}
+
+
+

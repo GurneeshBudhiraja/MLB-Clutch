@@ -31,6 +31,11 @@ function TriviaShowdown({
         console.log("streak-points-info");
         const { results } = message.devvitData;
         setUserStreakData(results);
+      } else if (message.devvitDataType === "trivia-question") {
+        console.log("trivia-question");
+        const { results } = message.devvitData;
+        console.log("Results: ");
+        console.log(results);
       }
       setLoading(false);
     });

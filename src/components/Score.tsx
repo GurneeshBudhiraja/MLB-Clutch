@@ -1,5 +1,6 @@
 import { Devvit, useAsync, useState, useWebView } from "@devvit/public-api";
 import { getRedisData, updateRedisData } from "../utils/utils.js";
+import { getPlayerFact, getTriviaQuestion } from "../utils/openAI.js";
 
 function Score({ context }: { context: Devvit.Context }) {
   const getMatchData = async (matchDate?: string) => {
@@ -240,9 +241,192 @@ function Score({ context }: { context: Devvit.Context }) {
           console.log("getTriviaQuestion");
           const { data } = message;
           console.log(data); // TODO: remove in production
-          const { category } = data;
+
+          // TODO: remove in production
+          const languages = ["english", "spanish", "japanese"];
+          const randomeLanguage = languages[Math.floor(Math.random() * 3)];
+
+          // const { category, language = randomeLanguage } = data;
+          const { category, language = "english" } = data;
           console.log("selected question category:");
           console.log(category);
+          // ["triviaQuestion", "playerGuess"]
+          // When the category received from webview is playerGuess
+
+          // Gets the openAI key
+          const openAIKey = (await context.settings.get(
+            "open-ai-api-key"
+          )) as string;
+          if (!openAIKey) {
+            webview.postMessage({
+              devvitDataType: "trivia-question",
+              devvitData: {
+                success: false,
+                results: {},
+                errorCode: "empty-open-ai-key",
+              },
+            });
+            return;
+          }
+
+          if (category === "playerGuess") {
+            // Length is 93
+            const playerNames = [
+              "aaronJudge",
+              "adleyRutschman",
+              "andrewBenintendi",
+              "andrésMuñoz",
+              "aroldisChapman",
+              "austinRiley",
+              "boBichette",
+              "bryanReynolds",
+              "bryceHarper",
+              "byronBuxton",
+              "camiloDoval",
+              "cedricMullins",
+              "christianWalker",
+              "christianYelich",
+              "clayHolmes",
+              "codyBellinger",
+              "corbinBurnes",
+              "corbinCarroll",
+              "coreySeager",
+              "dansbySwanson",
+              "davidBednar",
+              "devinWilliams",
+              "dylanCease",
+              "edwinDíaz",
+              "ellyDe",
+              "emmanuelClase",
+              "eugenioSuárez",
+              "fernandoTatis",
+              "framberValdez",
+              "franciscoLindor",
+              "freddieFreeman",
+              "félixBautista",
+              "garySánchez",
+              "georgeKirby",
+              "gregorySoto",
+              "gunnarHenderson",
+              "harrisonBader",
+              "ianHapp",
+              "jazzChisholm",
+              "jhoanDuran",
+              "joeMantiply",
+              "jordanRomano",
+              "joseAltuve",
+              "joshBell",
+              "joshHader",
+              "joséLeclerc",
+              "joséRamírez",
+              "juanSoto",
+              "julioRodríguez",
+              "justinVerlander",
+              "kenleyJansen",
+              "ketelMarte",
+              "kevinGausman",
+              "kyleTucker",
+              "larsNootbaar",
+              "liamHendriks",
+              "loganWebb",
+              "luisCastillo",
+              "mannyMachado",
+              "mattOlson",
+              "maxScherzer",
+              "mikeTrout",
+              "mookieBetts",
+              "oneilCruz",
+              "ozzieAlbies",
+              "paulGoldschmidt",
+              "paulSewald",
+              "peteAlonso",
+              "placeholderHeadshot",
+              "rafaelDevers",
+              "raiselIglesias",
+              "ryanHelsley",
+              "ryanPressly",
+              "sandyAlcantara",
+              "scottBarlow",
+              "shaneBieber",
+              "shoheiOhtani",
+              "spencerSteer",
+              "starlingMarte",
+              "stevenKwan",
+              "teoscarHernández",
+              "tommyEdman",
+              "tommyPham",
+              "treaTurner",
+              "tristonMcKenzie",
+              "vladimirGuerrero",
+              "walkerBuehler",
+              "willSmith",
+              "willsonContreras",
+              "willyAdames",
+              "xanderBogaerts",
+              "yordanAlvarez",
+              "zackWheeler",
+            ];
+            console.log("playerNames.length");
+            console.log(playerNames.length);
+
+            // Generates a random index b/w 0 and 93
+            const randomIndex =
+              (Math.floor(Math.random() * 93) + Date.now()) % 93;
+
+            const selectedPlayer = playerNames[randomIndex];
+            console.log("selectedPlayer");
+            console.log(selectedPlayer);
+
+            const playerQuestion = await getPlayerFact(
+              openAIKey,
+              selectedPlayer,
+              language
+            );
+            if (!playerQuestion.success) {
+              webview.postMessage({
+                devvitDataType: "trivia-question",
+                devvitData: {
+                  success: false,
+                  results: {},
+                  errorCode: "question-generation-error",
+                },
+              });
+              return;
+            }
+            webview.postMessage({
+              devvitDataType: "trivia-question",
+              devvitData: {
+                success: true,
+                results: playerQuestion,
+                errorCode: null,
+              },
+            });
+            return;
+          }
+          // When the category received from webview is triviaQuestion
+          else if (category === "triviaQuestion") {
+            const playerQuestion = await getTriviaQuestion(openAIKey, language);
+            if (!playerQuestion.success) {
+              webview.postMessage({
+                devvitDataType: "trivia-question",
+                devvitData: {
+                  success: false,
+                  results: {},
+                  errorCode: "question-generation-error",
+                },
+              });
+              return;
+            }
+            webview.postMessage({
+              devvitDataType: "trivia-question",
+              devvitData: {
+                success: true,
+                results: playerQuestion,
+                errorCode: null,
+              },
+            });
+            return;
+          }
         }
       }
     },
