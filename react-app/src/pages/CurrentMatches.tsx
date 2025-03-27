@@ -604,6 +604,7 @@ function CurrentMatches({ assetsLinks }: { assetsLinks: AssetLinks }) {
   const [liveMatches, setLiveMatches] = useState<any>([]);
 
   useEffect(() => {
+    setLoading(true);
     if (!date) {
       const newDate = new Date();
       const [month, date, year] = newDate
@@ -612,7 +613,6 @@ function CurrentMatches({ assetsLinks }: { assetsLinks: AssetLinks }) {
       const currentDate = [year, month.padStart(2, "0"), date].join("-");
       setDate(currentDate);
     }
-    setLoading(true);
 
     // Gets the streak points from the Devvit
     window.parent.postMessage(
@@ -655,7 +655,9 @@ function CurrentMatches({ assetsLinks }: { assetsLinks: AssetLinks }) {
           }
         }
       }
-      setLoading(false);
+      setTimeout(() => {
+        setLoading(false);
+      }, 1000);
     });
     return () => setLoading(true);
   }, []);

@@ -12,3 +12,4 @@ webroot
 
 # The file contains script to download data from MLB
 script.js 
+assets/playerHeadshots

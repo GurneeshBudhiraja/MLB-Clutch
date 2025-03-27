@@ -73,7 +73,10 @@ const BetModal = ({
     >
       {loading ? (
         <>
-          <img src={assetLinks["loader"]} className="h-10 w-10" />
+          <img
+            src={assetLinks["loader"]}
+            className="h-40 w-40 md:h-48 md:w-48"
+          />
         </>
       ) : (
         <motion.div

@@ -197,6 +197,45 @@ function Score({ context }: { context: Devvit.Context }) {
             },
           });
           return;
+        } else if (message && message.type === "getStreakPoints") {
+          console.log("getStreakPoints");
+          const userId = String(context.userId);
+          const applicationDataJSON = await context.redis.get(
+            "application-data"
+          );
+          if (!applicationDataJSON) {
+            webview.postMessage({
+              devvitDataType: "streak-points-info",
+              devvitData: {
+                success: false,
+                errorCode: "no-application-data",
+                results: {},
+              },
+            });
+            return;
+          }
+          const applicationData = JSON.parse(applicationDataJSON);
+          const response: {
+            success?: boolean;
+            errorCode?: string | null;
+            results?: any;
+          } = {};
+          console.log(applicationData);
+          if (!Object.keys(applicationData).length || !applicationData?.users) {
+            response["success"] = false;
+            response["errorCode"] = "no-application-data";
+            response["results"] = {};
+          } else {
+            const userData = applicationData["users"][userId];
+            response["success"] = true;
+            response["errorCode"] = null;
+            response["results"] = { ...userData };
+          }
+          webview.postMessage({
+            devvitDataType: "streak-points-info",
+            devvitData: response,
+          });
+          return;
         }
       }
     },

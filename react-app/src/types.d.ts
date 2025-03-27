@@ -1,4 +1,4 @@
-type CurrentPage = "currentMatches" | "bets"
+type CurrentPage = HeaderOptions
 
 type MatchFilter = "all" | "live" | "scheduled"
 
@@ -64,7 +64,7 @@ type AssetLinks = {
 }
 
 
-type HeaderOptions = "currentMatches" | "bets"
+type HeaderOptions = "currentMatches" | "bets" | "trivia"
 
 
 type PageOptions = {
@@ -101,3 +101,6 @@ type AllGameCard = {
   venue: string;
   onClick: () => void;
 }
+
+
+type Progress = "positive" | "negative" | "neutral"
