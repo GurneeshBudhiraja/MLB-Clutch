@@ -6,7 +6,7 @@ const BetModal = ({
   setShowBetModal,
   redisUserInfo,
 }: {
-  match: Record<string, any>;
+  match: number;
   setShowBetModal: React.Dispatch<React.SetStateAction<boolean>>;
   redisUserInfo: Record<string, any>;
 }) => {

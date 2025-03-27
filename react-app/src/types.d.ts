@@ -99,4 +99,5 @@ type AllGameCard = {
   seriesDescription: string;
   officialDate: string;
   venue: string;
+  onClick: () => void;
 }
