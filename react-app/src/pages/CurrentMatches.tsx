@@ -1,7 +1,10 @@
+// @ts-nocheck
 import React, { useEffect, useState } from "react";
 import BetModal from "../components/BetModal";
 import DatePicker from "../components/DatePicker";
 import { motion } from "motion/react";
+import LiveGameCard from "../components/LiveGameCard";
+import AllGameCard from "../components/AllGameCard";
 
 const matches: Game[] = [
   {
@@ -15,7 +18,7 @@ const matches: Game[] = [
     status: {
       abstractGameState: "Final",
       codedGameState: "F",
-      detailedState: "Final",
+      detailedState: "Live",
       statusCode: "I",
       startTimeTBD: false,
       abstractGameCode: "F",
@@ -74,7 +77,7 @@ const matches: Game[] = [
     status: {
       abstractGameState: "Final",
       codedGameState: "F",
-      detailedState: "Final",
+      detailedState: "Live",
       statusCode: "I",
       startTimeTBD: false,
       abstractGameCode: "F",
@@ -599,79 +602,78 @@ function CurrentMatches({ assetsLinks }: { assetsLinks: AssetLinks }) {
   const [showBetModal, setShowBetModal] = useState<boolean>(false);
   const [selectedMatch, setSelectedMatch] = useState<Record<string, any>>({});
   const [redisUserInfo, setRedisUserInfo] = useState<Record<string, any>>({});
-  const [showLiveMatches, setShowLiveMatches] = useState<boolean>(true);
 
-  useEffect(() => {
-    if (!date) {
-      const newDate = new Date();
-      const [month, date, year] = newDate
-        .toLocaleDateString()
-        .split("/") as string[];
-      const currentDate = [year, month.padStart(2, "0"), date].join("-");
-      setDate(currentDate);
-    }
-    setLoading(true);
+  // useEffect(() => {
+  //   if (!date) {
+  //     const newDate = new Date();
+  //     const [month, date, year] = newDate
+  //       .toLocaleDateString()
+  //       .split("/") as string[];
+  //     const currentDate = [year, month.padStart(2, "0"), date].join("-");
+  //     setDate(currentDate);
+  //   }
+  //   setLoading(true);
 
-    // Gets the streak points from the Devvit
-    window.parent.postMessage(
-      {
-        type: "userRedisInfo",
-      },
-      "*"
-    );
+  //   // Gets the streak points from the Devvit
+  //   window.parent.postMessage(
+  //     {
+  //       type: "userRedisInfo",
+  //     },
+  //     "*"
+  //   );
 
-    window.addEventListener("message", (event) => {
-      console.log("Message has been received");
-      console.log(event.data.type);
-      console.log(event.data.data);
-      if (event.data.type === "devvit-message") {
-        const { data } = event.data;
-        console.log(data);
-        const { message } = data;
-        console.log(message);
-        if (message.devvitDataType === "match-info") {
-          console.log(message.devvitData);
-          const { errorCode, success, results } = message.devvitData;
-          console.log(errorCode);
-          console.log(success);
-          if (success) {
-            setMLBMatches(results);
-          } else {
-            // TODO: implement better error handling
-            console.log("Error code:");
-            console.log(errorCode);
-          }
-        } else if (message.devvitDataType === "streak-points-info") {
-          const { errorCode, success, results } = message.devvitData;
-          console.log(errorCode);
-          console.log(success);
-          console.log(results);
-          if (success) {
-            setRedisUserInfo(results);
-          } else {
-            console.log("Error in getUserStreak");
-          }
-        }
-      }
-      setLoading(false);
-    });
-    return () => setLoading(true);
-  }, []);
+  //   window.addEventListener("message", (event) => {
+  //     console.log("Message has been received");
+  //     console.log(event.data.type);
+  //     console.log(event.data.data);
+  //     if (event.data.type === "devvit-message") {
+  //       const { data } = event.data;
+  //       console.log(data);
+  //       const { message } = data;
+  //       console.log(message);
+  //       if (message.devvitDataType === "match-info") {
+  //         console.log(message.devvitData);
+  //         const { errorCode, success, results } = message.devvitData;
+  //         console.log(errorCode);
+  //         console.log(success);
+  //         if (success) {
+  //           setMLBMatches(results);
+  //         } else {
+  //           // TODO: implement better error handling
+  //           console.log("Error code:");
+  //           console.log(errorCode);
+  //         }
+  //       } else if (message.devvitDataType === "streak-points-info") {
+  //         const { errorCode, success, results } = message.devvitData;
+  //         console.log(errorCode);
+  //         console.log(success);
+  //         console.log(results);
+  //         if (success) {
+  //           setRedisUserInfo(results);
+  //         } else {
+  //           console.log("Error in getUserStreak");
+  //         }
+  //       }
+  //     }
+  //     setLoading(false);
+  //   });
+  //   return () => setLoading(true);
+  // }, []);
 
-  useEffect(() => {
-    setLoading(true);
-    // Gets the live matches result from the Devvit
-    window.parent.postMessage(
-      {
-        type: "getMatches",
-        data: {
-          date,
-          matchFilter: "live",
-        },
-      },
-      "*"
-    );
-  }, [date]);
+  // useEffect(() => {
+  //   setLoading(true);
+  //   // Gets the live matches result from the Devvit
+  //   window.parent.postMessage(
+  //     {
+  //       type: "getMatches",
+  //       data: {
+  //         date,
+  //         matchFilter: "live",
+  //       },
+  //     },
+  //     "*"
+  //   );
+  // }, [date]);
 
   return (
     <div className="p-4 relative h-full ">
@@ -690,9 +692,9 @@ function CurrentMatches({ assetsLinks }: { assetsLinks: AssetLinks }) {
 
       {!loading && mlbMatches.length ? (
         <>
-          {showLiveMatches && (
+          {
             <motion.div
-              className="p-4 max-w-5xl mx-auto justify-center items-center"
+              className=" max-w-5xl mx-auto justify-center items-center mb-10"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
@@ -700,128 +702,83 @@ function CurrentMatches({ assetsLinks }: { assetsLinks: AssetLinks }) {
             >
               {/* Live matches */}
 
-              <div className="my-4 w-full overflow-x-auto snap-x snap-mandatory flex gap-3 scroll-smooth px-2 no-scrollbar ">
-                {mlbMatches.map((match, index) => {
+              <div className="flex items-center gap-4 my-4 ">
+                <span className="h-[1px] bg-gray-500 flex-grow" />
+                <div className="text-gray-300 font-medium">Ongoing Matches</div>
+                <span className="h-[1px] bg-gray-500 flex-grow" />
+              </div>
+
+              <div className="mb-4 w-full overflow-x-auto snap-x snap-mandatory flex gap-3 scroll-smooth px-2 no-scrollbar">
+                {mlbMatches.map((match) => {
                   const awayTeam = match.teams.away;
                   const homeTeam = match.teams.home;
                   const isFinal = match.status.statusCode === "I";
                   if (!isFinal) return;
 
                   return (
-                    <div
+                    <LiveGameCard
                       key={match.gamePk}
-                      className="relative snap-start shrink-0 bg-theme-white text-theme-blue  backdrop-blur-lg rounded-xl  border border-theme-red transition-all duration-300 shadow-2xl shadow-black/30 overflow-hidden py-2 w-3/4 mx-auto"
-                    >
-                      {/* Live Status Ribbon */}
-                      <div className="absolute top-2 right-2 flex items-center space-x-1.5 bg-mlb-red px-3 py-1 rounded-full animate-pulse text-theme-red">
-                        <div className="w-2 h-2 bg-theme-red rounded-full"></div>
-                        <span className="text-xs font-bold uppercase tracking-wide">
-                          LIVE • {match.status.detailedState}
-                        </span>
-                      </div>
-
-                      {/* Teams Container */}
-                      <div className="flex items-center justify-between pt-6 pb-4 text-theme-blue">
-                        {/* Away Team */}
-                        <div className="flex-1 flex flex-col items-center">
-                          <div className="relative w-16 h-16 mb-2">
-                            <img
-                              src={
-                                assetsLinks[
-                                  String(
-                                    awayTeam.team.id
-                                  ) as AssertLinksProperties
-                                ]
-                              }
-                              alt={awayTeam.team.name}
-                            />
-                          </div>
-                          <div className="text-center">
-                            <h3 className="text-sm font-bold text-mlb-gold mb-0.5">
-                              {awayTeam.team.name}
-                            </h3>
-                            <div className="text-3xl">{awayTeam.score}</div>
-                          </div>
-                        </div>
-
-                        {/* Inning Status */}
-                        <div className="mx-3 flex flex-col items-center ">
-                          <div className="w-px h-12" />
-                          <div className="my-1.5 px-3 py-1 bg-mlb-red/20 rounded-full">
-                            <span className="text-xs font-semibold text-mlb-red uppercase">
-                              vs
-                            </span>
-                          </div>
-                          <div className="w-px h-12" />
-                        </div>
-
-                        {/* Home Team */}
-                        <div className="flex-1 flex flex-col items-center">
-                          <div className="relative w-16 h-16 mb-2">
-                            <img
-                              src={
-                                assetsLinks[
-                                  String(
-                                    homeTeam.team.id
-                                  ) as AssertLinksProperties
-                                ]
-                              }
-                              alt={homeTeam.team.name}
-                              className="w-full h-full object-contain transition-all duration-300"
-                            />
-                          </div>
-                          <div className="text-center">
-                            <h3 className="text-sm font-bold text-mlb-gold mb-0.5">
-                              {homeTeam.team.name}
-                            </h3>
-                            <div
-                              className={`text-3xl font-mlb-score ${
-                                homeTeam.isWinner
-                                  ? "text-mlb-gold"
-                                  : "text-white/50"
-                              }`}
-                            >
-                              {homeTeam.score}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Game Details Footer */}
-                      <div className="border-t border-mlb-red/20 pt-3 mt-2">
-                        <div className="grid grid-cols-2 gap-3 text-center">
-                          <div>
-                            <p className="text-xs font-semibold text-theme-blue mb-0.5">
-                              {new Date(match.gameDate).toLocaleTimeString([], {
-                                hour: "numeric",
-                                minute: "2-digit",
-                              })}
-                            </p>
-                            <p className="text-[0.7rem] text-theme-blue/60 font-medium">
-                              {match.venue.name}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-xs font-semibold text-theme-blue/90 mb-0.5">
-                              {match.innings
-                                ? `${match.innings} INN`
-                                : "REGULAR"}
-                            </p>
-                            <p className="text-[0.7rem] text-theme-blue/60 font-medium">
-                              {match.dayNight === "day"
-                                ? "DAY GAME"
-                                : "NIGHT GAME"}
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                      gamePk={match.gamePk}
+                      detailedState={match.status.detailedState}
+                      awayTeamURL={
+                        assetsLinks[
+                          String(awayTeam.team.id) as AssertLinksProperties
+                        ]
+                      }
+                      awayTeamScore={awayTeam.score}
+                      awayTeamName={awayTeam.team.name}
+                      homeTeamURL={
+                        assetsLinks[
+                          String(homeTeam.team.id) as AssertLinksProperties
+                        ]
+                      }
+                      homeTeamName={homeTeam.team.name}
+                      homeTeamScore={homeTeam.score}
+                      isHomeTeamWinner={homeTeam.isWinner}
+                      gameDate={match.gameDate}
+                      seriesDescription={match.seriesDescription ?? ""}
+                      timeOfTheDay={match.dayNight}
+                      venueName={match.venue.name}
+                    />
                   );
                 })}
               </div>
+              {/* All Matches */}
             </motion.div>
-          )}
+          }
 
+          {/* All Matches */}
+          <div className="max-w-xl md:max-w-6xl mx-auto">
+            <div className="flex items-center gap-4 my-4">
+              <span className="h-[1px] bg-gray-500 flex-grow" />
+              <div className="text-gray-300 font-medium">All Matches</div>
+              <span className="h-[1px] bg-gray-500 flex-grow" />
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {mlbMatches.map((match, index) => (
+                <AllGameCard
+                  key={index}
+                  gamePk={match.gamePk}
+                  awayTeamName={match.teams.away.team.name}
+                  awayTeamURL={
+                    assetsLinks[
+                      String(match.teams.away.team.id) as AssertLinksProperties
+                    ] ?? assetsLinks["teamPlaceholder"]
+                  }
+                  homeTeamName={match.teams.home.team.name}
+                  homeTeamURL={
+                    assetsLinks[
+                      String(match.teams.home.team.id) as AssertLinksProperties
+                    ] ?? assetsLinks["teamPlaceholder"]
+                  }
+                  seriesDescription={match.seriesDescription}
+                  status={match.status.detailedState}
+                  officialDate={match.officialDate}
+                  venue={match.venue.name}
+                />
+              ))}
+            </div>
+          </div>
           {showBetModal && (
             <BetModal
               match={selectedMatch}

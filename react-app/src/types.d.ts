@@ -70,3 +70,33 @@ type HeaderOptions = "currentMatches" | "bets"
 type PageOptions = {
   [key in HeaderOptions]?: string;
 }
+
+
+type LiveGameCard = {
+  gamePk: number;
+  detailedState: string;
+  awayTeamURL: string;
+  awayTeamName: string;
+  awayTeamScore: number;
+  homeTeamURL: string;
+  homeTeamName: string;
+  homeTeamScore: number;
+  isHomeTeamWinner: boolean;
+  seriesDescription: string;
+  venueName: string;
+  timeOfTheDay: string;
+  gameDate: string;
+}
+
+
+type AllGameCard = {
+  gamePk: number;
+  status: string;
+  homeTeamName: string;
+  homeTeamURL: string;
+  awayTeamName: string;
+  awayTeamURL: string;
+  seriesDescription: string;
+  officialDate: string;
+  venue: string;
+}
