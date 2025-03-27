@@ -1,7 +1,7 @@
-// TODOD: fix the type issue later on
 import React, { useEffect, useState } from "react";
 import BetModal from "../components/BetModal";
 import DatePicker from "../components/DatePicker";
+import { motion } from "motion/react";
 
 function CurrentMatches({ assetsLinks }: { assetsLinks: AssetLinks }) {
   const [mlbMatches, setMLBMatches] = React.useState<Game[]>([]);
@@ -84,8 +84,10 @@ function CurrentMatches({ assetsLinks }: { assetsLinks: AssetLinks }) {
     );
   }, [date]);
   return (
-    <div className="p-4 relative h-full">
-      <DatePicker setDate={setDate} />
+    <div className="p-4 relative h-full ">
+      <div className="w-full flex justify-end">
+        <DatePicker setDate={setDate} />
+      </div>
       {loading && (
         <div className="flex justify-center items-center h-full">
           <img
@@ -96,7 +98,7 @@ function CurrentMatches({ assetsLinks }: { assetsLinks: AssetLinks }) {
         </div>
       )}
 
-      {!loading && (
+      {!loading && mlbMatches.length ? (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 p-4">
           {mlbMatches.map((match) => {
             const awayTeam = match.teams.away;
@@ -235,6 +237,17 @@ function CurrentMatches({ assetsLinks }: { assetsLinks: AssetLinks }) {
             />
           )}
         </div>
+      ) : (
+        <motion.div
+          className="w-full border border-theme-white border-dashed rounded-lg p-4 text-center text-theme-white opacity-80 max-w-lg mx-auto mt-10"
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <p className="text-lg font-semibold">No Games Today</p>
+          <p className="text-sm mt-1">
+            Check back tomorrow for more MLB action!
+          </p>
+        </motion.div>
       )}
     </div>
   );
