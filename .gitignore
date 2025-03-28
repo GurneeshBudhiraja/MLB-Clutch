@@ -8,3 +8,5 @@ yarn-error.log*
 todo.yaml
 .env
 .DS_STORE
+script.js
+webroot/
