@@ -122,16 +122,21 @@ type GameStateType = {
   newQuestionTimer: number;
 }
 
+type CurrentQuestionType = {
+  question: string;
+  options: string[];
+  answer: number;
+  englishOptions: never[];
+  success: boolean;
+}
 
 interface GuessThePlayerProps {
   playersHeadshots: Record<string | "placeholderHeadshot", string>;
-  currentQuestion: {
-    question: string;
-    options: string[];
-    answer: number;
-    englishOptions: never[];
-    success: boolean;
-  };
+  currentQuestion: CurrentQuestionType;
   gameState: GameStateType;
   setGameState: React.Dispatch<React.SetStateAction<GameStateType>>;
+  setUserStreakData: React.Dispatch<React.SetStateAction<{
+    progress: Progress;
+    quizStreak: number;
+  }>>;
 }

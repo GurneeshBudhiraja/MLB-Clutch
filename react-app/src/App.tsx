@@ -146,8 +146,9 @@ function App() {
       )}
       {currentPage === "trivia" && (
         <TriviaShowdown
-          assetsLinks={assetsLinks}
           playersHeadshots={playersHeadshots}
+          setCurrentPage={setCurrentPage}
+          assetsLinks={assetsLinks}
         />
       )}
     </div>

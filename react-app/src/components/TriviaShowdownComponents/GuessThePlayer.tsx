@@ -7,6 +7,7 @@ function GuessThePlayer({
   currentQuestion,
   gameState,
   setGameState,
+  setUserStreakData,
 }: GuessThePlayerProps) {
   let interval: NodeJS.Timeout;
   useEffect(() => {
@@ -97,7 +98,7 @@ function GuessThePlayer({
                       ]
                 }
                 alt="Player silhouette"
-                className={`w-full h-full md:h-full object-cover group-hover:grayscale-0 transition-all duration-500 ${
+                className={`w-full h-fit md:h-full object-cover group-hover:grayscale-0 transition-all duration-500 ${
                   !gameState.isAnswered && "grayscale"
                 }`}
               />
@@ -147,7 +148,6 @@ function GuessThePlayer({
               {currentQuestion.question}
             </motion.div>
           </div>
-
           <div className="space-y-2 md:space-y-3">
             <div className="text-xs md:text-sm font-semibold text-theme-blue mb-1 md:mb-2">
               OPTIONS
@@ -159,6 +159,28 @@ function GuessThePlayer({
                   onClick={() => {
                     if (gameState.isAnswered) return;
                     clearInterval(interval);
+
+                    // Calculate streak changes
+                    const isCorrect = index === currentQuestion.answer;
+                    setUserStreakData((prev) => {
+                      const progress = isCorrect ? "positive" : "negative";
+                      const quizStreak = prev.quizStreak + (isCorrect ? 2 : -1);
+                      window.parent.postMessage(
+                        {
+                          type: "updateStreakPoints",
+                          data: {
+                            progress,
+                            quizStreak,
+                          },
+                        },
+                        "*"
+                      );
+                      return {
+                        progress,
+                        quizStreak,
+                      };
+                    });
+
                     setGameState((prev) => ({
                       ...prev,
                       timer: 15,
@@ -196,6 +218,27 @@ function GuessThePlayer({
               ))}
             </div>
           </div>
+          {gameState.isAnswered && (
+            <motion.button
+              onClick={() => {
+                setGameState((prev) => ({
+                  ...prev,
+                  questionLoading: true,
+                }));
+              }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className={`w-fit p-3 md:p-4 mt-4 text-end rounded-lg md:rounded-xl 
+              bg-gradient-to-r from-theme-blue to-theme-red text-white font-bold
+              shadow-lg hover:shadow-xl transition-all duration-300 ml-auto cursor-pointer
+              ${!gameState.isAnswered && "opacity-0 pointer-events-none"}
+              text-sm md:text-lg`}
+            >
+              Next Question
+            </motion.button>
+          )}
         </motion.div>
       </motion.div>
     </motion.div>

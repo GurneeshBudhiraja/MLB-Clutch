@@ -8,6 +8,7 @@ import {
 import { getPlayerFact, getTriviaQuestion } from "../utils/openAI.js";
 import { webview } from "motion/react-client";
 import { isElementAccessExpression } from "typescript";
+import { getRedisData } from "./LeaderBoard.js";
 
 function Score({ context }: { context: Devvit.Context }) {
   const getMatchData = async (matchDate?: string) => {
@@ -470,6 +471,31 @@ function Score({ context }: { context: Devvit.Context }) {
               },
             });
             return;
+          }
+        } else if (message && message.type === "updateStreakPoints") {
+          console.log("updateStreakPoints");
+          const { data } = message;
+          console.log(data);
+          const applicationData = await getRedisData(
+            context,
+            "application-data"
+          );
+          if (!applicationData) {
+            console.log("No application data has been found");
+            return;
+          } else {
+            const userId = String(context.userId);
+            console.log(userId);
+            console.log(applicationData);
+            applicationData["users"][userId] = { ...data };
+
+            console.log("applicationData:");
+            console.log(applicationData);
+            await context.redis.set(
+              "application-data",
+              JSON.stringify(applicationData)
+            );
+            console.log("application data has been updated");
           }
         }
       }

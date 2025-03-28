@@ -41,6 +41,7 @@ export default function LeaderBoard({
           return;
         } else {
           const { users } = data as ApplicationData;
+          console.log(users);
           const newLeaderboardStats: LeaderboardStatsType[] = [];
           for (const userId in users) {
             const user = await context.reddit.getUserById(userId);
