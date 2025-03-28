@@ -1,26 +1,39 @@
 import { Devvit, StateSetter, useAsync, useState } from "@devvit/public-api";
-import { getRedisData } from "../utils/utils.js";
 import { Loading } from "./Loading.js";
 
-function LeaderBoard({
+export default function LeaderBoard({
   setShowLeaderboard,
   context,
 }: {
   setShowLeaderboard: StateSetter<boolean>;
-  context: RedditContext;
+  context: Devvit.Context;
 }) {
   const [leaderboardStats, setLeaderboardStats] = useState<
     Array<LeaderboardStatsType>
   >([]);
   const [loading, setLoading] = useState<boolean>(true);
 
+  /**
+   * Gets the user's data from Redis
+   * Gets the username and sort the user data based on the streak points
+   * Updates the `leaderboardStats` state
+   * Caches the result with a minute of expiry
+   */
   useAsync(
     async () => {
-      const redisData = await getRedisData(context, "application-data");
-      if (!redisData) {
-        return {};
-      }
-      return redisData;
+      return context.cache(
+        async () => {
+          const redisData = await getRedisData(context, "application-data");
+          if (!redisData) {
+            return {};
+          }
+          return redisData;
+        },
+        {
+          key: "application-data-cache",
+          ttl: 60 * 1000, // in milliseconds
+        }
+      );
     },
     {
       finally: async (data) => {
@@ -28,16 +41,20 @@ function LeaderBoard({
           return;
         } else {
           const { users } = data as ApplicationData;
+          console.log(users);
           const newLeaderboardStats: LeaderboardStatsType[] = [];
           for (const userId in users) {
-            // Uses the userid to get the user info
             const user = await context.reddit.getUserById(userId);
-            const userName = user.username;
+            const userName = user?.username ?? "Unknown";
             const streak = users[userId].quizStreak;
             const progress: Progress = users[userId]?.progress ?? "neutral";
-            newLeaderboardStats.push({ userName, streak, progress });
+            newLeaderboardStats.push({
+              userName: userName ?? "Unknown",
+              streak,
+              progress,
+            });
           }
-          newLeaderboardStats.sort((a, b) => b.streak - a.streak);
+          newLeaderboardStats.sort((a, b) => b.streak - a.streak); // Sorts in descending order
           setLeaderboardStats(newLeaderboardStats);
         }
         setLoading(false);
@@ -131,7 +148,7 @@ function LeaderBoard({
                         : "neutral-background" // Alternating row color
                     }
                     border={index === 0 ? "thin" : "none"}
-                    borderColor={index === 0 ? "#bf0d3e" : ""}
+                    borderColor={index === 0 ? "Yellow-300" : ""}
                     cornerRadius={index === 0 ? "small" : "none"}
                   >
                     <text
@@ -154,21 +171,21 @@ function LeaderBoard({
                         player.progress === "neutral") && (
                         <icon
                           name="upvote-fill"
-                          color="#bf0d3e" // MLB red for positive trend
+                          color="KiwiGreen-400"
                           size="small"
                         />
                       )}
                       {player.progress === "negative" && (
                         <icon
                           name="downvote-fill"
-                          color="#002D72" // MLB blue for negative trend
+                          color="Red-500"
                           size="small"
                         />
                       )}
                       <text
                         weight="bold"
                         color={
-                          index === 0 ? "#bf0d3e" : "neutral-content-strong"
+                          index === 0 ? "Yellow-300" : "neutral-content-strong"
                         }
                       >
                         {player.streak}
@@ -184,4 +201,22 @@ function LeaderBoard({
   );
 }
 
-export default LeaderBoard;
+// Gets the data from the Redis
+export async function getRedisData(
+  context: Devvit.Context,
+  redisKey: RedisKey
+): Promise<boolean | ApplicationData> {
+  try {
+    const jsonRedisData = await context.redis.get(redisKey);
+    if (!jsonRedisData) {
+      console.log(`Not able to find any data related to ${redisKey}`);
+      return false;
+    }
+    const redisData = JSON.parse(jsonRedisData);
+    return redisData;
+  } catch (error) {
+    console.log("Error in getting redis data");
+    console.log(error);
+    return false;
+  }
+}

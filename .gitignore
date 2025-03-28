@@ -8,5 +8,8 @@ yarn-error.log*
 todo.yaml
 .env
 .DS_STORE
-script.js
-webroot/
+webroot
+
+# The file contains script to download data from MLB
+script.js 
+assets/playerHeadshots
