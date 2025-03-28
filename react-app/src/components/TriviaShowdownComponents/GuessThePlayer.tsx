@@ -2,19 +2,6 @@ import { useEffect } from "react";
 import { motion } from "framer-motion";
 import Timer from "./Timer";
 
-interface GuessThePlayerProps {
-  playersHeadshots: Record<string | "placeholderHeadshot", string>;
-  currentQuestion: {
-    question: string;
-    options: string[];
-    answer: number;
-    englishOptions: never[];
-    success: boolean;
-  };
-  gameState: GameStateType;
-  setGameState: React.Dispatch<React.SetStateAction<GameStateType>>;
-}
-
 function GuessThePlayer({
   playersHeadshots,
   currentQuestion,
@@ -40,7 +27,21 @@ function GuessThePlayer({
       });
     }, 1000);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      setGameState({
+        gameStarted: false,
+        gameLanguage: "english",
+        isTimer: false,
+        timer: 10, // in seconds
+        questionLoading: true,
+        questionCategory: "",
+        correctAnswer: 0,
+        isAnswered: false,
+        selectedAnswer: -1,
+        newQuestionTimer: 3,
+      });
+    };
   }, []);
 
   return (
@@ -60,68 +61,78 @@ function GuessThePlayer({
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6, delay: 0.2 }}
-        className="max-w-4xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8"
+        className={`max-w-4xl mx-auto grid grid-cols-1 ${
+          gameState.questionCategory === "playerGuess"
+            ? "lg:grid-cols-3"
+            : "lg:grid-cols-1"
+        } gap-4 md:gap-8`}
       >
-        {/* Enhanced Image Card */}
-        <motion.div
-          initial={{ x: -20, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          transition={{ duration: 0.6 }}
-          className="group relative bg-theme-white rounded-xl md:rounded-2xl shadow-lg md:shadow-xl overflow-hidden border-2 md:border-4 border-theme-white hover:border-theme-blue transition-all duration-300 col-span-1"
-        >
-          <div className="relative overflow-hidden h-fit  md:h-64">
-            <motion.img
-              initial={{ opacity: 0, scale: 1.1 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.3, duration: 0.5 }}
-              src={
-                !gameState.isAnswered
-                  ? playersHeadshots["placeholderHeadshot"]
-                  : playersHeadshots[
-                      currentQuestion.options[currentQuestion.answer]
-                        .split(" ")
-                        .map((word, index) => {
-                          if (index === 0) {
-                            return word.toLowerCase();
-                          } else {
-                            return word;
-                          }
-                        })
-                        .join("")
-                    ]
-              }
-              alt="Player silhouette"
-              className={`w-full h-full md:h-full object-cover group-hover:grayscale-0 transition-all duration-500 ${
-                !gameState.isAnswered && "grayscale"
-              }`}
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-          </div>
-
+        {/* Enhanced Image Card - Only show for playerGuess */}
+        {gameState.questionCategory === "playerGuess" && (
           <motion.div
-            className="p-3 md:p-6 bg-gradient-to-r from-theme-blue to-theme-red"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.6 }}
+            initial={{ x: -20, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ duration: 0.6 }}
+            className="group relative bg-theme-white rounded-xl md:rounded-2xl shadow-lg md:shadow-xl overflow-hidden border-2 md:border-4 border-theme-white hover:border-theme-blue transition-all duration-300 col-span-1"
           >
-            <div className="flex items-center justify-center">
-              <p className="text-base md:text-2xl font-bold text-theme-white text-center">
-                {!gameState.isAnswered ? (
-                  <>Who Am I?</>
-                ) : (
-                  currentQuestion["options"][currentQuestion["answer"]]
-                )}
-              </p>
+            <div className="relative overflow-hidden h-fit md:h-64">
+              <motion.img
+                initial={{ opacity: 0, scale: 1.1 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.3, duration: 0.5 }}
+                src={
+                  !gameState.isAnswered
+                    ? playersHeadshots["placeholderHeadshot"]
+                    : playersHeadshots[
+                        currentQuestion.options[currentQuestion.answer]
+                          .split(" ")
+                          .map((word, index) => {
+                            if (index === 0) {
+                              return word.toLowerCase();
+                            } else {
+                              return word;
+                            }
+                          })
+                          .join("")
+                      ]
+                }
+                alt="Player silhouette"
+                className={`w-full h-full md:h-full object-cover group-hover:grayscale-0 transition-all duration-500 ${
+                  !gameState.isAnswered && "grayscale"
+                }`}
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
             </div>
+
+            <motion.div
+              className="p-3 md:p-6 bg-gradient-to-r from-theme-blue to-theme-red"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.6 }}
+            >
+              <div className="flex items-center justify-center">
+                <p className="text-base md:text-2xl font-bold text-theme-white text-center">
+                  {!gameState.isAnswered ? (
+                    <>Who Am I?</>
+                  ) : (
+                    currentQuestion["options"][currentQuestion["answer"]]
+                  )}
+                </p>
+              </div>
+            </motion.div>
           </motion.div>
-        </motion.div>
+        )}
 
         {/* Enhanced Question Section */}
         <motion.div
           initial={{ x: 20, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           transition={{ duration: 0.6 }}
-          className="flex flex-col space-y-3 md:space-y-4 col-span-2 justify-center"
+          className={`flex flex-col space-y-3 md:space-y-4 ${
+            gameState.questionCategory === "playerGuess"
+              ? "col-span-2"
+              : "col-span-1"
+          } justify-center`}
         >
           <div className="bg-theme-white p-3 md:p-6 rounded-xl md:rounded-2xl">
             <div className="text-xs md:text-sm font-semibold text-theme-red mb-1 md:mb-2">

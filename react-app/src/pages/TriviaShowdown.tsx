@@ -81,14 +81,32 @@ function TriviaShowdown({
   }
 
   const getTriviaQuestion = () => {
-    setGameState({ ...gameState, questionLoading: true });
+    // The issue is here - setGameState is using stale gameState value in the spread operator
+    // Remove the spread operator since we're setting all values anyway
+    setGameState((prev) => ({
+      ...prev,
+      isTimer: false,
+      timer: 10,
+      questionLoading: true,
+      questionCategory: "",
+      correctAnswer: 0,
+      isAnswered: false,
+      selectedAnswer: -1,
+      newQuestionTimer: 3,
+    }));
+
     const category: TriviaQuestionCategory[] = [
       "triviaQuestion",
       "playerGuess",
     ];
     const categoryChoice =
       category[(Math.floor(Math.random() * 2) + Date.now()) % 2];
-    setGameState({ ...gameState, questionCategory: categoryChoice });
+    console.log(categoryChoice);
+    // Update this line to not use spread operator
+    setGameState((prevState) => ({
+      ...prevState,
+      questionCategory: categoryChoice,
+    }));
     // TODO: uncomment this in prod
     // window.parent.postMessage(
     //   {
@@ -103,33 +121,25 @@ function TriviaShowdown({
   };
 
   return (
-    <div className="p-4 relative h-screen ">
-      {/* 
-      const [timer, setTimer] = useState(10);
-        const [currentQuestion, setCurrentQuestion] = useState({
-          question:
-            "Who is the MLB player known for both pitching and hitting prowess? 🌟",
-          options: ["Shohei Ohtani", "Mike Trout"],
-          answer: 0,
-          englishOptions: [],
-          success: true,
-        });
-        const [selectedAnswer, setSelectedAnswer] = useState<number>(-1);
-        const [isAnswered, setIsAnswered] = useState(false); 
-        */}
-      <GuessThePlayer
-        playersHeadshots={playersHeadshots}
-        currentQuestion={currentQuestion}
-        gameState={gameState}
-        setGameState={setGameState}
-      />
-
-      {/* {gameState.questionCategory === "playerGuess" ? (
-        <GuessThePlayer />
-      ) : (
-        <TriviaQuestion />
-      )} */}
-    </div>
+    <>
+      <button
+        onClick={() => {
+          getTriviaQuestion();
+        }}
+      >
+        Click
+      </button>
+      <div className="p-4 relative h-screen ">
+        {gameState.questionCategory && (
+          <GuessThePlayer
+            playersHeadshots={playersHeadshots}
+            currentQuestion={currentQuestion}
+            gameState={gameState}
+            setGameState={setGameState}
+          />
+        )}
+      </div>
+    </>
   );
 }
 

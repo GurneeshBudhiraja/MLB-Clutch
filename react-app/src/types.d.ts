@@ -119,4 +119,19 @@ type GameStateType = {
   correctAnswer: number;
   isAnswered: boolean;
   selectedAnswer: number;
+  newQuestionTimer: number;
+}
+
+
+interface GuessThePlayerProps {
+  playersHeadshots: Record<string | "placeholderHeadshot", string>;
+  currentQuestion: {
+    question: string;
+    options: string[];
+    answer: number;
+    englishOptions: never[];
+    success: boolean;
+  };
+  gameState: GameStateType;
+  setGameState: React.Dispatch<React.SetStateAction<GameStateType>>;
 }
