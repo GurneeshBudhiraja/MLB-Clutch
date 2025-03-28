@@ -709,7 +709,7 @@ function CurrentMatches({ assetsLinks }: { assetsLinks: AssetLinks }) {
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.4 }}
             >
-              <div className="flex items-center gap-4 mt-2 max-w-xl md:max-w-6xl mx-auto">
+              <div className="flex items-center gap-4 my-2 max-w-xl md:max-w-6xl mx-auto">
                 <span className="h-[1px] bg-gray-500 flex-grow" />
                 <div className="text-gray-300 font-medium">Ongoing Matches</div>
                 <span className="h-[1px] bg-gray-500 flex-grow" />

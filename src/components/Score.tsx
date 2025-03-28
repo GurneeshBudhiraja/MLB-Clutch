@@ -1,5 +1,13 @@
-import { Devvit, useWebView } from "@devvit/public-api";
+import {
+  Devvit,
+  useChannel,
+  useForm,
+  useState,
+  useWebView,
+} from "@devvit/public-api";
 import { getPlayerFact, getTriviaQuestion } from "../utils/openAI.js";
+import { webview } from "motion/react-client";
+import { isElementAccessExpression } from "typescript";
 
 function Score({ context }: { context: Devvit.Context }) {
   const getMatchData = async (matchDate?: string) => {
@@ -40,6 +48,47 @@ function Score({ context }: { context: Devvit.Context }) {
       }
     }
   };
+
+  const [supportingTeamData, setSupportingTeamData] = useState({});
+  const supportForm = useForm(
+    {
+      title: "Message Form",
+      fields: [
+        {
+          type: "paragraph",
+          name: "message",
+          label: "Enter your message:",
+          required: true,
+        },
+      ],
+      acceptLabel: "Submit",
+    },
+    async (values) => {
+      console.log("Message received:", values.message);
+
+      // Get current user and subreddit
+      const currentUser = await context.reddit.getCurrentUser();
+      const currentSubreddit = await context.reddit.getCurrentSubreddit();
+
+      // Submit the post with the form message
+      await context.reddit.submitPost({
+        title: `Supporting Team ${supportingTeamData.teamId} for Game ${supportingTeamData.gamePk}`,
+        subredditName: currentSubreddit.name,
+        preview: (
+          <vstack padding="medium" alignment="center middle">
+            <text>Loading your support message...</text>
+          </vstack>
+        ),
+        textFallback: {
+          text: `Support message from ${currentUser!.username}: ${
+            values.message
+          }`,
+        },
+      });
+
+      context.ui.showToast("Your support message has been posted!");
+    }
+  );
 
   const { mount } = useWebView({
     // URL of your web view content
@@ -430,7 +479,6 @@ function Score({ context }: { context: Devvit.Context }) {
       console.log("Web view closed");
     },
   });
-
   return (
     <vstack gap="medium" padding="medium" onPress={mount}>
       <button

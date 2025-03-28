@@ -1,5 +1,7 @@
 // @ts-nocheck
 import { useEffect, useState } from "react";
+import GuessThePlayer from "../components/TriviaShowdownComponents/GuessThePlayer";
+import TriviaQuestion from "../components/TriviaShowdownComponents/TriviaQuestion";
 function TriviaShowdown({
   assetsLinks,
   playersHeadshots,
@@ -15,7 +17,7 @@ function TriviaShowdown({
     quizStreak: number;
   }>({ progress: "neutral", quizStreak: 0 });
 
-  const [pageState, setPageState] = useState<PageStateType>({
+  const [gameState, setGameState] = useState<GameStateType>({
     gameStarted: false,
     gameLanguage: "english",
     isTimer: false,
@@ -34,10 +36,6 @@ function TriviaShowdown({
     success: true,
   });
 
-  const [timeLeft, setTimeLeft] = useState(pageState.timer);
-  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
-  const [isAnswerCorrect, setIsAnswerCorrect] = useState<boolean | null>(null);
-
   useEffect(() => {
     window.parent.postMessage(
       {
@@ -53,42 +51,24 @@ function TriviaShowdown({
         setUserStreakData(results);
       } else if (message.devvitDataType === "trivia-question") {
         const { results } = message.devvitData;
-        if (pageState.gameLanguage === "english") {
-          setPageState({
-            ...pageState,
+        if (gameState.gameLanguage === "english") {
+          setGameState({
+            ...gameState,
             correctAnswer: results.options[results.answer],
           });
         } else {
-          setPageState({
-            ...pageState,
+          setGameState({
+            ...gameState,
             correctAnswer: results.englishOptions[results.answer],
           });
         }
         shuffleOptions(results.options);
         setCurrentQuestion(results);
-        setPageState({ ...pageState, questionLoading: false });
-        setTimeLeft(pageState.timer);
-        setSelectedAnswer(null);
-        setIsAnswerCorrect(null);
+        setGameState({ ...gameState, questionLoading: false });
       }
     });
     setLoading(false);
   }, []);
-
-  useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (
-      pageState.gameStarted &&
-      pageState.isTimer &&
-      timeLeft > 0 &&
-      !selectedAnswer
-    ) {
-      timer = setInterval(() => {
-        setTimeLeft((prev) => prev - 1);
-      }, 1000);
-    }
-    return () => clearInterval(timer);
-  }, [pageState.gameStarted, pageState.isTimer, timeLeft, selectedAnswer]);
 
   function shuffleOptions(options: string[]) {
     for (let i = options.length - 1; i > 0; i--) {
@@ -98,28 +78,37 @@ function TriviaShowdown({
   }
 
   const getTriviaQuestion = () => {
-    setPageState({ ...pageState, questionLoading: true });
+    setGameState({ ...gameState, questionLoading: true });
     const category: TriviaQuestionCategory[] = [
       "triviaQuestion",
       "playerGuess",
     ];
     const categoryChoice =
       category[(Math.floor(Math.random() * 2) + Date.now()) % 2];
-    window.parent.postMessage(
-      {
-        type: "getTriviaQuestion",
-        data: {
-          category: categoryChoice,
-          language: pageState.gameLanguage,
-        },
-      },
-      "*"
-    );
+    setGameState({ ...gameState, questionCategory: categoryChoice });
+    // TODO: uncomment this in prod
+    // window.parent.postMessage(
+    //   {
+    //     type: "getTriviaQuestion",
+    //     data: {
+    //       category: categoryChoice,
+    //       language: pageState.gameLanguage,
+    //     },
+    //   },
+    //   "*"
+    // );
   };
 
-  return <div className="p-4 relative h-full">This is something
-  <button onClick={getTriviaQuestion}>Get trivia</button>
-  </div>;
+  return (
+    <div className="p-4 relative h-full">
+      <button onClick={getTriviaQuestion}></button>
+      {gameState.questionCategory === "playerGuess" ? (
+        <GuessThePlayer />
+      ) : (
+        <TriviaQuestion />
+      )}
+    </div>
+  );
 }
 
 export default TriviaShowdown;

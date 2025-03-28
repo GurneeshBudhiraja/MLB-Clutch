@@ -1,11 +1,9 @@
-// @ts-nocheck
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 
 const BetModal = ({
   gamePk,
   setShowBetModal,
-  redisUserInfo,
   assetLinks,
 }: {
   gamePk: number;
@@ -16,25 +14,8 @@ const BetModal = ({
   const [selectedTeam, setSelectedTeam] = useState<"away" | "home" | null>(
     null
   );
-  const [betAmount, setBetAmount] = useState(0);
   const [matchDetails, setMatchDetails] = useState({});
   const [loading, setLoading] = useState<boolean>(true);
-
-  // async function submitBet() {
-  //   console.log("Submitting post message");
-  //   await window.parent.postMessage(
-  //     {
-  //       type: "betsDataUpdate",
-  //       data: {
-  //         matchId: match.gamePk,
-  //         selectedTeam,
-  //         date: match.officialDate,
-  //         betAmount,
-  //       },
-  //     },
-  //     "*"
-  //   );
-  // }
 
   useEffect(() => {
     window.parent.postMessage(
@@ -61,6 +42,12 @@ const BetModal = ({
       }
       setLoading(false);
     });
+
+    return () => {
+      setLoading(true);
+      setMatchDetails({});
+      setSelectedTeam(null);
+    };
   }, []);
 
   return (
@@ -82,7 +69,8 @@ const BetModal = ({
         <motion.div
           initial={{ y: 20 }}
           animate={{ y: 0 }}
-          className="bg-gradient-to-br from-theme-blue to-theme-red rounded-xl p-6 w-full max-w-md shadow-2xl relative h-3/4 md:h-fit overflow-scroll"
+          className="bg-gradient-to-br from-theme-blue to-theme-red rounded-xl p-6 w-full max-w-md shadow-2xl relative h-3/4 md:h-h-4/5 overflow-scroll"
+          // @ts-expect-error Types issue
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
@@ -92,7 +80,9 @@ const BetModal = ({
                 Game Overview
               </h2>
               <p className="text-sm text-theme-white mt-1">
+                {/* @ts-expect-error Types issue */}
                 {matchDetails.status.detailedState} •{" "}
+                {/* @ts-expect-error Types issue */}
                 {matchDetails.weather.condition}
               </p>
             </div>
@@ -109,33 +99,45 @@ const BetModal = ({
             {["away", "home"].map((teamType) => (
               <div
                 key={teamType}
-                className={`cursor-pointer p-4 rounded-lg transition-all ${
+                className={`p-4 rounded-lg transition-all ${
+                  // @ts-expect-error Types issue
                   matchDetails.status.abstractGameState !== "Final" &&
                   selectedTeam === teamType
-                    ? "border-2 border-theme-red bg-theme-blue/30"
-                    : "border-2 border-transparent hover:bg-theme-blue/20"
+                    ? "border-2 border-theme-red bg-theme-blue/30 cursor-pointer "
+                    : "border-2 border-transparent hover:bg-theme-blue/20 cursor-pointer "
                 }`}
-                onClick={() => setSelectedTeam(teamType)}
+                onClick={() => {
+                  // @ts-expect-error Types issue
+                  if (matchDetails.status.abstractGameState === "Final") return;
+                  // @ts-expect-error Types issue
+                  setSelectedTeam(teamType);
+                }}
               >
                 <div className="flex flex-col items-center">
                   <img
                     src={
+                      // @ts-expect-error Types issue
                       assetLinks[String(matchDetails.teams[teamType].id)] ??
                       assetLinks["teamPlaceholder"]
                     }
                     // src={`https://www.mlbstatic.com/team-logos/${match.teams[teamType].id}.svg`}
                     className="w-16 h-16 mb-2 object-contain"
+                    // @ts-expect-error Types issue
                     alt={matchDetails.teams[teamType].teamName}
                   />
                   <h3 className="text-lg font-bold text-white">
+                    {/* @ts-expect-error Types issue  */}
                     {matchDetails.teams[teamType].abbreviation}
                   </h3>
                   <p className="text-theme-white font-digital text-2xl">
+                    {/* @ts-expect-error Types issue  */}
                     {matchDetails.teams[teamType].record?.wins}-
+                    {/* @ts-expect-error Types issue  */}
                     {matchDetails.teams[teamType].record?.losses}
                   </p>
                   <div className="mt-2 text-center">
                     <p className="text-xs text-theme-white">
+                      {/* @ts-expect-error Types issue */}
                       {matchDetails.teams[teamType].springLeague?.name}
                     </p>
                   </div>
@@ -150,6 +152,7 @@ const BetModal = ({
               <div>
                 <p className="text-theme-white">First Pitch</p>
                 <p className="text-white font-medium">
+                  {/* @ts-expect-error Types issue  */}
                   {new Date(matchDetails.datetime.dateTime)?.toLocaleTimeString(
                     "en-US",
                     {
@@ -161,24 +164,29 @@ const BetModal = ({
               </div>
               <div>
                 <p className="text-theme-white/70">Duration</p>
+                {/* @ts-expect-error Types issue  */}
                 {matchDetails.gameInfo.gameDurationMinutes ? (
                   <p className="text-theme-white font-medium">
                     <span>
                       {isNaN(
                         Math.floor(
+                          // @ts-expect-error Types issue
                           matchDetails.gameInfo.gameDurationMinutes / 60
                         )
                       )
                         ? "--h"
                         : Math.floor(
+                            // @ts-expect-error Types issue
                             matchDetails.gameInfo.gameDurationMinutes / 60
                           )}
                       h{" "}
                     </span>
                     <span>
+                      {/* @ts-expect-error Types issue  */}
                       {isNaN(matchDetails.gameInfo.gameDurationMinutes % 60)
                         ? "--"
-                        : matchDetails.gameInfo.gameDurationMinutes % 60}
+                        : // @ts-expect-error Types issue
+                          matchDetails.gameInfo.gameDurationMinutes % 60}
                     </span>
                   </p>
                 ) : (
@@ -189,21 +197,26 @@ const BetModal = ({
                 <p className="text-theme-white">Venue</p>
                 <p
                   className="text-white font-medium truncate"
+                  // @ts-expect-error Types issue
                   title={matchDetails.venue.name}
                 >
+                  {/* @ts-expect-error Types issue  */}
                   {matchDetails.venue.name}
                 </p>
               </div>
               <div>
                 <p className="text-theme-white">Attendance</p>
                 <p className="text-white font-medium">
+                  {/* @ts-expect-error Types issue  */}
                   {matchDetails.gameInfo.attendance?.toLocaleString() ?? "n/a"}
                 </p>
               </div>
               <div>
                 <p className="text-theme-white">Weather</p>
+                {/* @ts-expect-error Types issue  */}
                 {matchDetails?.weather?.temp ? (
                   <p className="text-white font-medium">
+                    {/* @ts-expect-error Types issue  */}
                     {matchDetails.weather.temp}°F, {matchDetails.weather.wind}
                   </p>
                 ) : (
@@ -213,7 +226,9 @@ const BetModal = ({
               <div>
                 <p className="text-theme-white">Field</p>
                 <p className="text-white font-medium">
+                  {/* @ts-expect-error Types issue  */}
                   {matchDetails.venue.fieldInfo.turfType} ·{" "}
+                  {/* @ts-expect-error Types issue  */}
                   {matchDetails.venue.fieldInfo.roofType}
                 </p>
               </div>
@@ -230,11 +245,13 @@ const BetModal = ({
                 <p className="text-theme-white">No-hitter</p>
                 <p
                   className={
+                    // @ts-expect-error Types issue
                     matchDetails.flags.noHitter
                       ? "text-theme-red"
                       : "text-white"
                   }
                 >
+                  {/* @ts-expect-error Types issue  */}
                   {matchDetails.flags.noHitter ? "Active" : "None"}
                 </p>
               </div>
@@ -242,27 +259,18 @@ const BetModal = ({
                 <p className="text-theme-white">Perfect Game</p>
                 <p
                   className={
+                    // @ts-expect-error Types issue
                     matchDetails.flags.perfectGame
                       ? "text-theme-red"
                       : "text-theme-white"
                   }
                 >
+                  {/* @ts-expect-error Types issue  */}
                   {matchDetails.flags.perfectGame ? "Active" : "None"}
                 </p>
               </div>
             </div>
           </div>
-
-          {/* Betting Controls */}
-          {selectedTeam && (
-            <div
-              className="flex items-center justify-center w-full bg-theme-white border border-theme-red text-theme-blue py-2 rounded-full  "
-              onClick={() => console.log(selectedTeam)}
-            >
-              Poll
-              {/* ... (existing betting controls) ... */}
-            </div>
-          )}
         </motion.div>
       )}
     </motion.div>

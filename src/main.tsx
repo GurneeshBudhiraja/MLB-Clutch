@@ -9,6 +9,7 @@ Devvit.configure({
   redis: true,
   http: true,
   redditAPI: true,
+  realtime: true,
 });
 
 /**
@@ -70,6 +71,7 @@ Devvit.addTrigger({
       );
       /**
        * Creates and stores the empty `application-bets` object on the installation of the application in the Redis db
+       * Used for storing the poll results of the users
        */
       await context.redis.set("application-bets", JSON.stringify({}));
       console.log(

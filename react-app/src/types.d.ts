@@ -109,7 +109,7 @@ type TriviaQuestionCategory = "triviaQuestion" | "playerGuess"
 type TriviaLanguage = "english" | "spanish" | "japanese"
 
 
-type PageStateType = {
+type GameStateType = {
   gameStarted: boolean;
   gameLanguage: TriviaLanguage | "";
   isTimer: boolean;

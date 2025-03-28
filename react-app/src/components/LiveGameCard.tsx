@@ -31,7 +31,11 @@ function LiveGameCard({
         {/* Away Team */}
         <div className="flex-1 flex flex-col items-center">
           <div className="relative w-16 h-16 mb-2">
-            <img src={awayTeamURL} alt={awayTeamName} />
+            <img
+              src={awayTeamURL}
+              alt={awayTeamName}
+              className="w-full h-full object-contain transition-all duration-300"
+            />
           </div>
           <div className="text-center">
             <h3 className="text-sm font-bold text-mlb-gold mb-0.5">
