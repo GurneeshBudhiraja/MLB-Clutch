@@ -21,10 +21,13 @@ function TriviaShowdown({
     gameStarted: false,
     gameLanguage: "english",
     isTimer: false,
-    timer: 15, // in seconds
+    timer: 10, // in seconds
     questionLoading: true,
     questionCategory: "",
     correctAnswer: 0,
+    isAnswered: false,
+    selectedAnswer: -1,
+    newQuestionTimer: 3,
   });
 
   const [currentQuestion, setCurrentQuestion] = useState({
@@ -101,7 +104,25 @@ function TriviaShowdown({
 
   return (
     <div className="p-4 relative h-screen ">
-      <GuessThePlayer playersHeadshots={playersHeadshots} />
+      {/* 
+      const [timer, setTimer] = useState(10);
+        const [currentQuestion, setCurrentQuestion] = useState({
+          question:
+            "Who is the MLB player known for both pitching and hitting prowess? 🌟",
+          options: ["Shohei Ohtani", "Mike Trout"],
+          answer: 0,
+          englishOptions: [],
+          success: true,
+        });
+        const [selectedAnswer, setSelectedAnswer] = useState<number>(-1);
+        const [isAnswered, setIsAnswered] = useState(false); 
+        */}
+      <GuessThePlayer
+        playersHeadshots={playersHeadshots}
+        currentQuestion={currentQuestion}
+        gameState={gameState}
+        setGameState={setGameState}
+      />
 
       {/* {gameState.questionCategory === "playerGuess" ? (
         <GuessThePlayer />

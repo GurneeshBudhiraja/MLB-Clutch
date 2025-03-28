@@ -64,7 +64,7 @@ type AssetLinks = {
 }
 
 
-type HeaderOptions = "currentMatches" | "bets" | "trivia"
+type HeaderOptions = "currentMatches" | "trivia"
 
 
 type PageOptions = {
@@ -117,4 +117,6 @@ type GameStateType = {
   questionLoading: boolean;
   questionCategory: TriviaQuestionCategory | "";
   correctAnswer: number;
+  isAnswered: boolean;
+  selectedAnswer: number;
 }

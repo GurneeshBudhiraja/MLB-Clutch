@@ -1,35 +1,42 @@
-// @ts-nocheck
-import React, { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { motion } from "framer-motion";
 import Timer from "./Timer";
 
 interface GuessThePlayerProps {
   playersHeadshots: Record<string | "placeholderHeadshot", string>;
+  currentQuestion: {
+    question: string;
+    options: string[];
+    answer: number;
+    englishOptions: never[];
+    success: boolean;
+  };
+  gameState: GameStateType;
+  setGameState: React.Dispatch<React.SetStateAction<GameStateType>>;
 }
 
-function GuessThePlayer({ playersHeadshots }: GuessThePlayerProps) {
-  const [timer, setTimer] = useState(10);
-  const [currentQuestion, setCurrentQuestion] = useState({
-    question:
-      "Who is the MLB player known for both pitching and hitting prowess? 🌟",
-    options: ["Shohei Ohtani", "Mike Trout"],
-    answer: 0,
-    englishOptions: [],
-    success: true,
-  });
-  const [selectedAnswer, setSelectedAnswer] = useState<number>(-1);
-  const [isAnswered, setIsAnswered] = useState(false);
-  let interval;
-
+function GuessThePlayer({
+  playersHeadshots,
+  currentQuestion,
+  gameState,
+  setGameState,
+}: GuessThePlayerProps) {
+  let interval: NodeJS.Timeout;
   useEffect(() => {
     interval = setInterval(() => {
-      setTimer((prev) => {
-        if (prev === 0) {
+      setGameState((prev) => {
+        if (prev.timer === 0) {
           clearInterval(interval);
-          setIsAnswered(true);
-          return 0;
+          return {
+            ...prev,
+            isAnswered: true,
+            timer: 0,
+          };
         }
-        return prev - 1;
+        return {
+          ...prev,
+          timer: prev.timer - 1,
+        };
       });
     }, 1000);
 
@@ -41,20 +48,11 @@ function GuessThePlayer({ playersHeadshots }: GuessThePlayerProps) {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
-      className="mx-auto h-full px-4 sm:px-10"
+      className="mx-auto h-full px-4 sm:px-6 md:px-10"
     >
       {/* Enhanced Countdown Timer */}
-      <div className="relative mb-8">
-        <Timer timer={!isAnswered ? timer : 10} />
-        <motion.div
-          className="absolute top-0 left-0 h-1 bg-gradient-to-r from-theme-blue to-theme-red"
-          animate={
-            !isAnswered
-              ? { width: `${(timer / 10) * 100}%` }
-              : { width: `${(10 / 10) * 100}%` }
-          }
-          transition={{ duration: 0.3 }}
-        />
+      <div className="relative mb-4 md:mb-8">
+        <Timer timer={!gameState.isAnswered ? gameState.timer : 10} />
       </div>
 
       {/* Main Content Container */}
@@ -62,22 +60,22 @@ function GuessThePlayer({ playersHeadshots }: GuessThePlayerProps) {
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6, delay: 0.2 }}
-        className="max-w-4xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8"
+        className="max-w-4xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8"
       >
         {/* Enhanced Image Card */}
         <motion.div
           initial={{ x: -20, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           transition={{ duration: 0.6 }}
-          className="group relative bg-theme-white rounded-2xl shadow-xl overflow-hidden border-4 border-theme-white hover:border-theme-blue transition-all duration-300 col-span-1"
+          className="group relative bg-theme-white rounded-xl md:rounded-2xl shadow-lg md:shadow-xl overflow-hidden border-2 md:border-4 border-theme-white hover:border-theme-blue transition-all duration-300 col-span-1"
         >
-          <div className="relative overflow-hidden">
+          <div className="relative overflow-hidden h-fit  md:h-64">
             <motion.img
               initial={{ opacity: 0, scale: 1.1 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.3, duration: 0.5 }}
               src={
-                !isAnswered
+                !gameState.isAnswered
                   ? playersHeadshots["placeholderHeadshot"]
                   : playersHeadshots[
                       currentQuestion.options[currentQuestion.answer]
@@ -93,22 +91,22 @@ function GuessThePlayer({ playersHeadshots }: GuessThePlayerProps) {
                     ]
               }
               alt="Player silhouette"
-              className={`w-full h-64 object-cover  group-hover:grayscale-0 transition-all duration-500 ${
-                !isAnswered && "grayscale"
+              className={`w-full h-full md:h-full object-cover group-hover:grayscale-0 transition-all duration-500 ${
+                !gameState.isAnswered && "grayscale"
               }`}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
           </div>
 
           <motion.div
-            className="p-6 bg-gradient-to-r from-theme-blue to-theme-red"
+            className="p-3 md:p-6 bg-gradient-to-r from-theme-blue to-theme-red"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.6 }}
           >
             <div className="flex items-center justify-center">
-              <p className="text-2xl font-bold text-theme-white text-center">
-                {!isAnswered ? (
+              <p className="text-base md:text-2xl font-bold text-theme-white text-center">
+                {!gameState.isAnswered ? (
                   <>Who Am I?</>
                 ) : (
                   currentQuestion["options"][currentQuestion["answer"]]
@@ -123,14 +121,14 @@ function GuessThePlayer({ playersHeadshots }: GuessThePlayerProps) {
           initial={{ x: 20, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           transition={{ duration: 0.6 }}
-          className="flex flex-col space-y-3 col-span-2 justify-center"
+          className="flex flex-col space-y-3 md:space-y-4 col-span-2 justify-center"
         >
-          <div className="bg-theme-white p-6 rounded-2xl">
-            <div className="text-sm font-semibold text-theme-red mb-2">
+          <div className="bg-theme-white p-3 md:p-6 rounded-xl md:rounded-2xl">
+            <div className="text-xs md:text-sm font-semibold text-theme-red mb-1 md:mb-2">
               QUESTION
             </div>
             <motion.div
-              className="text-2xl font-bold text-theme-blue"
+              className="text-base md:text-2xl font-bold text-theme-blue"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.4 }}
@@ -139,46 +137,49 @@ function GuessThePlayer({ playersHeadshots }: GuessThePlayerProps) {
             </motion.div>
           </div>
 
-          <div className="space-y-2">
-            <div className="text-sm font-semibold text-theme-blue mb-2">
+          <div className="space-y-2 md:space-y-3">
+            <div className="text-xs md:text-sm font-semibold text-theme-blue mb-1 md:mb-2">
               OPTIONS
             </div>
-            <div className="grid grid-cols-1 gap-3">
+            <div className="grid grid-cols-1 gap-2 md:gap-3">
               {currentQuestion.options.map((option, index) => (
                 <motion.button
                   key={index}
                   onClick={() => {
-                    if (isAnswered) return;
-                    setSelectedAnswer(index);
-                    setIsAnswered(true);
+                    if (gameState.isAnswered) return;
                     clearInterval(interval);
-                    setTimer(timer);
+                    setGameState((prev) => ({
+                      ...prev,
+                      timer: 15,
+                      selectedAnswer: index,
+                      isAnswered: true,
+                    }));
                   }}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.3 + index * 0.1, duration: 0.4 }}
-                  whileHover={!isAnswered && { scale: 1.02 }}
+                  whileHover={!gameState.isAnswered && { scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className={`w-full p-4 text-left rounded-xl shadow-sm hover:shadow-lg transition-all 
-                            border-2  focus:outline-none cursor-pointer ${
-                              !isAnswered
-                                ? "bg-theme-white text-theme-blue border-theme-blue/10 hover:border-theme-blue/30 focus:border-theme-blue/50 focus:ring-2 focus:ring-theme-blue/20"
-                                : selectedAnswer === index
-                                ? index === currentQuestion.answer
-                                  ? "bg-green-500 text-white"
-                                  : "bg-theme-red text-white"
-                                : index === currentQuestion.answer
-                                ? "bg-green-500 text-white"
-                                : "bg-theme-white text-theme-blue border-theme-blue/10"
-                            } ${isAnswered && "!cursor-not-allowed"}`}
+                  className={`w-full p-2 md:p-4 text-left rounded-lg md:rounded-xl shadow-sm hover:shadow-lg transition-all 
+                        border-2 focus:outline-none cursor-pointer text-sm md:text-base ${
+                          !gameState.isAnswered
+                            ? "bg-theme-white text-theme-blue border-theme-blue/10 hover:border-theme-blue/30 focus:border-theme-blue/50 focus:ring-2 focus:ring-theme-blue/20"
+                            : gameState.selectedAnswer === index
+                            ? index === currentQuestion.answer
+                              ? "bg-green-500 text-white"
+                              : "bg-theme-red text-white"
+                            : index === currentQuestion.answer
+                            ? "bg-green-500 text-white"
+                            : "bg-theme-white text-theme-blue border-theme-blue/10"
+                        } ${gameState.isAnswered && "!cursor-not-allowed"}`}
                   role="button"
                   tabIndex={0}
                 >
-                  <div className="flex items-center space-x-3">
-                    <div className=" font-bold text-gray-400">
+                  <div className="flex items-center space-x-2 md:space-x-3">
+                    <div className="font-bold text-gray-400 text-xs md:text-sm">
                       {String.fromCharCode(65 + index)}.
                     </div>
-                    <span className="">{option}</span>
+                    <span className="truncate">{option}</span>
                   </div>
                 </motion.button>
               ))}

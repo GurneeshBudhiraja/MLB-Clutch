@@ -12,7 +12,6 @@ function Header({
 
   const pageOptions: PageOptions = {
     currentMatches: "Ongoing Games",
-    bets: "My Predictions",
     trivia: "Trivia Showdown 🎁",
   };
 

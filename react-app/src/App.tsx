@@ -1,7 +1,6 @@
 import { useState } from "react";
 import Header from "./pages/Header";
 import CurrentMatches from "./pages/CurrentMatches";
-import UserBets from "./pages/UserBets";
 import TriviaShowdown from "./pages/TriviaShowdown";
 
 function App() {
@@ -145,8 +144,12 @@ function App() {
       {currentPage === "currentMatches" && (
         <CurrentMatches assetsLinks={assetsLinks} />
       )}
-      {currentPage === "bets" && <UserBets />}
-      {currentPage === "trivia" && <TriviaShowdown assetsLinks={assetsLinks} playersHeadshots={playersHeadshots} />}
+      {currentPage === "trivia" && (
+        <TriviaShowdown
+          assetsLinks={assetsLinks}
+          playersHeadshots={playersHeadshots}
+        />
+      )}
     </div>
   );
 }
