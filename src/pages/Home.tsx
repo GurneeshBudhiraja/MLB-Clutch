@@ -1,193 +1,116 @@
-// TODO: redesign the homepage.
 import { Devvit, useState } from "@devvit/public-api";
 import LeaderBoard from "../components/LeaderBoard.js";
 import Score from "../components/Score.js";
 
 function Home({ context }: { context: Devvit.Context }) {
-  // State to manage the leaderboard page
   const [showLeaderboard, setShowLeaderboard] = useState(false);
+  const [showRules, setShowRules] = useState(false);
 
-  // TODO: remove in prod
-  // const getRedditLinks = async () => {
-  //   const files = [
-  //     "108.png",
-  //     "109.png",
-  //     "110.png",
-  //     "111.png",
-  //     "112.png",
-  //     "113.png",
-  //     "114.png",
-  //     "115.png",
-  //     "116.png",
-  //     "117.png",
-  //     "118.png",
-  //     "119.png",
-  //     "120.png",
-  //     "121.png",
-  //     "133.png",
-  //     "134.png",
-  //     "135.png",
-  //     "136.png",
-  //     "137.png",
-  //     "138.png",
-  //     "139.png",
-  //     "140.png",
-  //     "teamPlaceholder.png",
-  //   ];
-  //   const fileLinks: Record<string, string> = {};
-  //   const fileNames = files.map((file) => {
-  //     const fileName = file.split(".")[0];
-  //     const url = context.assets.getURL(`teamLogos/${file}`);
-  //     fileLinks[fileName] = url;
-  //   });
-  //   console.log(fileLinks);
-  // };
-  const getRedditLinks = async () => {
-    // const files = [
-    //   "108.png",
-    //   "109.png",
-    //   "110.png",
-    //   "111.png",
-    //   "112.png",
-    //   "113.png",
-    //   "114.png",
-    //   "115.png",
-    //   "116.png",
-    //   "117.png",
-    //   "118.png",
-    //   "119.png",
-    //   "120.png",
-    //   "121.png",
-    //   "133.png",
-    //   "134.png",
-    //   "135.png",
-    //   "136.png",
-    //   "137.png",
-    //   "138.png",
-    //   "139.png",
-    //   "140.png",
-    //   "141.png",
-    //   "142.png",
-    //   "143.png",
-    //   "144.png",
-    //   "145.png",
-    //   "146.png",
-    //   "147.png",
-    //   "158.png",
-    //   "teamPlaceholder.png",
-    // ];
+  const files = [
+    "aaronJudge.jpg",
+    "adleyRutschman.jpg",
+    "andrewBenintendi.jpg",
+    "andrésMuñoz.jpg",
+    "aroldisChapman.jpg",
+    "austinRiley.jpg",
+    "boBichette.jpg",
+    "bryanReynolds.jpg",
+    "bryceHarper.jpg",
+    "byronBuxton.jpg",
+    "camiloDoval.jpg",
+    "cedricMullins.jpg",
+    "christianWalker.jpg",
+    "christianYelich.jpg",
+    "clayHolmes.jpg",
+    "codyBellinger.jpg",
+    "corbinBurnes.jpg",
+    "corbinCarroll.jpg",
+    "coreySeager.jpg",
+    "dansbySwanson.jpg",
+    "davidBednar.jpg",
+    "devinWilliams.jpg",
+    "dylanCease.jpg",
+    "edwinDíaz.jpg",
+    "ellyDe.jpg",
+    "emmanuelClase.jpg",
+    "eugenioSuárez.jpg",
+    "fernandoTatis.jpg",
+    "framberValdez.jpg",
+    "franciscoLindor.jpg",
+    "freddieFreeman.jpg",
+    "félixBautista.jpg",
+    "garySánchez.jpg",
+    "georgeKirby.jpg",
+    "gregorySoto.jpg",
+    "gunnarHenderson.jpg",
+    "harrisonBader.jpg",
+    "ianHapp.jpg",
+    "jazzChisholm.jpg",
+    "jhoanDuran.jpg",
+    "joeMantiply.jpg",
+    "jordanRomano.jpg",
+    "joseAltuve.jpg",
+    "joshBell.jpg",
+    "joshHader.jpg",
+    "joséLeclerc.jpg",
+    "joséRamírez.jpg",
+    "juanSoto.jpg",
+    "julioRodríguez.jpg",
+    "justinVerlander.jpg",
+    "kenleyJansen.jpg",
+    "ketelMarte.jpg",
+    "kevinGausman.jpg",
+    "kyleTucker.jpg",
+    "larsNootbaar.jpg",
+    "liamHendriks.jpg",
+    "loganWebb.jpg",
+    "luisCastillo.jpg",
+    "mannyMachado.jpg",
+    "mattOlson.jpg",
+    "maxScherzer.jpg",
+    "mikeTrout.jpg",
+    "mookieBetts.jpg",
+    "oneilCruz.jpg",
+    "ozzieAlbies.jpg",
+    "paulGoldschmidt.jpg",
+    "paulSewald.jpg",
+    "peteAlonso.jpg",
+    "placeholderHeadshot.jpeg",
+    "rafaelDevers.jpg",
+    "raiselIglesias.jpg",
+    "ryanHelsley.jpg",
+    "ryanPressly.jpg",
+    "sandyAlcantara.jpg",
+    "scottBarlow.jpg",
+    "shaneBieber.jpg",
+    "shoheiOhtani.jpg",
+    "spencerSteer.jpg",
+    "starlingMarte.jpg",
+    "stevenKwan.jpg",
+    "teoscarHernández.jpg",
+    "tommyEdman.jpg",
+    "tommyPham.jpg",
+    "treaTurner.jpg",
+    "tristonMcKenzie.jpg",
+    "vladimirGuerrero.jpg",
+    "walkerBuehler.jpg",
+    "willSmith.jpg",
+    "willsonContreras.jpg",
+    "willyAdames.jpg",
+    "xanderBogaerts.jpg",
+    "yordanAlvarez.jpg",
+    "zackWheeler.jpg",
+  ];
 
-    const files = [
-      "aaronJudge.jpg",
-      "adleyRutschman.jpg",
-      "andrewBenintendi.jpg",
-      "andrésMuñoz.jpg",
-      "aroldisChapman.jpg",
-      "austinRiley.jpg",
-      "boBichette.jpg",
-      "bryanReynolds.jpg",
-      "bryceHarper.jpg",
-      "byronBuxton.jpg",
-      "camiloDoval.jpg",
-      "cedricMullins.jpg",
-      "christianWalker.jpg",
-      "christianYelich.jpg",
-      "clayHolmes.jpg",
-      "codyBellinger.jpg",
-      "corbinBurnes.jpg",
-      "corbinCarroll.jpg",
-      "coreySeager.jpg",
-      "dansbySwanson.jpg",
-      "davidBednar.jpg",
-      "devinWilliams.jpg",
-      "dylanCease.jpg",
-      "edwinDíaz.jpg",
-      "ellyDe.jpg",
-      "emmanuelClase.jpg",
-      "eugenioSuárez.jpg",
-      "fernandoTatis.jpg",
-      "framberValdez.jpg",
-      "franciscoLindor.jpg",
-      "freddieFreeman.jpg",
-      "félixBautista.jpg",
-      "garySánchez.jpg",
-      "georgeKirby.jpg",
-      "gregorySoto.jpg",
-      "gunnarHenderson.jpg",
-      "harrisonBader.jpg",
-      "ianHapp.jpg",
-      "jazzChisholm.jpg",
-      "jhoanDuran.jpg",
-      "joeMantiply.jpg",
-      "jordanRomano.jpg",
-      "joseAltuve.jpg",
-      "joshBell.jpg",
-      "joshHader.jpg",
-      "joséLeclerc.jpg",
-      "joséRamírez.jpg",
-      "juanSoto.jpg",
-      "julioRodríguez.jpg",
-      "justinVerlander.jpg",
-      "kenleyJansen.jpg",
-      "ketelMarte.jpg",
-      "kevinGausman.jpg",
-      "kyleTucker.jpg",
-      "larsNootbaar.jpg",
-      "liamHendriks.jpg",
-      "loganWebb.jpg",
-      "luisCastillo.jpg",
-      "mannyMachado.jpg",
-      "mattOlson.jpg",
-      "maxScherzer.jpg",
-      "mikeTrout.jpg",
-      "mookieBetts.jpg",
-      "oneilCruz.jpg",
-      "ozzieAlbies.jpg",
-      "paulGoldschmidt.jpg",
-      "paulSewald.jpg",
-      "peteAlonso.jpg",
-      "placeholderHeadshot.jpeg",
-      "rafaelDevers.jpg",
-      "raiselIglesias.jpg",
-      "ryanHelsley.jpg",
-      "ryanPressly.jpg",
-      "sandyAlcantara.jpg",
-      "scottBarlow.jpg",
-      "shaneBieber.jpg",
-      "shoheiOhtani.jpg",
-      "spencerSteer.jpg",
-      "starlingMarte.jpg",
-      "stevenKwan.jpg",
-      "teoscarHernández.jpg",
-      "tommyEdman.jpg",
-      "tommyPham.jpg",
-      "treaTurner.jpg",
-      "tristonMcKenzie.jpg",
-      "vladimirGuerrero.jpg",
-      "walkerBuehler.jpg",
-      "willSmith.jpg",
-      "willsonContreras.jpg",
-      "willyAdames.jpg",
-      "xanderBogaerts.jpg",
-      "yordanAlvarez.jpg",
-      "zackWheeler.jpg",
-    ];
-
-    const fileLinks: Record<string, string> = {};
-    const fileNames = files.map((file, index) => {
-      const fileName = file.split(".")[0];
-      const url = context.assets.getURL(
-        `playerHeadshots/placeholderHeadshot.jpeg`
-      );
-      fileLinks[fileName] = url;
-      return;
-    });
-    console.log(fileLinks);
-  };
+  const fileLinks: Record<string, string> = {};
+  files.forEach((file) => {
+    const fileName = file.split(".")[0];
+    const url = context.assets.getURL(`playerHeadshots/${file}`);
+    fileLinks[fileName] = url;
+  });
 
   return (
     <zstack width="100%" height="100%" grow={true}>
-      {/* Background image */}
       <image
         url="background.jpeg"
         description="MLB-themed Background"
@@ -199,9 +122,7 @@ function Home({ context }: { context: Devvit.Context }) {
       />
 
       <vstack width="100%" height="100%">
-        {/* Header */}
         <hstack padding="medium" width="100%" alignment="start">
-          {/* Trophy GIF in top right */}
           <hstack alignment="end" width={"100%"} grow={true}>
             <image
               imageHeight={"60px"}
@@ -213,7 +134,6 @@ function Home({ context }: { context: Devvit.Context }) {
           </hstack>
         </hstack>
 
-        {/* Main content area */}
         <vstack grow alignment="middle center" gap="small">
           <text size="xxlarge" weight="bold" color="white" style="heading">
             ⚾ MLB Clutch
@@ -222,16 +142,143 @@ function Home({ context }: { context: Devvit.Context }) {
             Step up to the plate — test your MLB knowledge and prediction
             streaks!
           </text>
-          <Score context={context} />
+          <hstack alignment="center middle">
+            <button
+              appearance="bordered"
+              textColor="white"
+              onPress={() => setShowRules(true)}
+            >
+              Rules 📃
+            </button>
+            <Score context={context} />
+          </hstack>
         </vstack>
       </vstack>
 
-      {/* Leaderboard modal */}
       {showLeaderboard && (
         <LeaderBoard
           setShowLeaderboard={setShowLeaderboard}
           context={context}
         />
+      )}
+      {showRules && (
+        // Rules stack
+        <zstack width="100%" height="100%" backgroundColor="rgba(0, 0, 0, 0.7)">
+          <vstack width="80%" gap="medium" alignment="middle center">
+            <hstack
+              alignment="center"
+              padding="small"
+              backgroundColor="#BF0D3E"
+              cornerRadius="small"
+              width="100%"
+            >
+              <text size="xlarge" weight="bold" color="white">
+                ⚾ RULES ⚾
+              </text>
+            </hstack>
+
+            <vstack
+              gap="medium"
+              padding="medium"
+              backgroundColor="white"
+              cornerRadius="small"
+              width="100%"
+            >
+              <hstack gap="small">
+                <text size="large" weight="bold" color="#041E42">
+                  1.
+                </text>
+                <text size="large" color="#041E42">
+                  Be respectful to other fans and teams
+                </text>
+              </hstack>
+
+              <hstack gap="small">
+                <text size="large" weight="bold" color="#041E42">
+                  2.
+                </text>
+                <text size="large" color="#041E42">
+                  No spam or excessive self-promotion
+                </text>
+              </hstack>
+
+              <hstack gap="small">
+                <text size="large" weight="bold" color="#041E42">
+                  3.
+                </text>
+                <text size="large" color="#041E42">
+                  Keep discussions related to baseball
+                </text>
+              </hstack>
+
+              <hstack gap="small">
+                <text size="large" weight="bold" color="#041E42">
+                  4.
+                </text>
+                <text size="large" color="#041E42">
+                  No personal attacks or harassment
+                </text>
+              </hstack>
+
+              <hstack gap="small">
+                <text size="large" weight="bold" color="#041E42">
+                  5.
+                </text>
+                <text size="large" color="#041E42">
+                  Use appropriate language and content
+                </text>
+              </hstack>
+
+              <hstack gap="small">
+                <text size="large" weight="bold" color="#041E42">
+                  6.
+                </text>
+                <text size="large" color="#041E42">
+                  The app lets you view live, scheduled, and past MLB games
+                </text>
+              </hstack>
+
+              <hstack gap="small">
+                <text size="large" weight="bold" color="#041E42">
+                  7.
+                </text>
+                <text size="large" color="#041E42">
+                  Trivia questions reward +2 streak points for correct answers
+                  and -1 for wrong answers
+                </text>
+              </hstack>
+
+              <hstack gap="small">
+                <text size="large" weight="bold" color="#041E42">
+                  8.
+                </text>
+                <text size="large" color="#041E42">
+                  You have 10 seconds to answer each trivia question
+                </text>
+              </hstack>
+
+              <hstack gap="small">
+                <text size="large" weight="bold" color="#041E42">
+                  9.
+                </text>
+                <text size="large" color="#041E42">
+                  Future updates will include live polls and friendly bets using
+                  streak points
+                </text>
+              </hstack>
+            </vstack>
+
+            <hstack width="100%" alignment="end">
+              <button
+                appearance="primary"
+                textColor="white"
+                onPress={() => setShowRules(false)}
+              >
+                Close Rules
+              </button>
+            </hstack>
+          </vstack>
+        </zstack>
       )}
     </zstack>
   );
