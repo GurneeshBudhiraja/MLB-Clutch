@@ -100,13 +100,14 @@ function TriviaShowdown({
   };
 
   return (
-    <div className="p-4 relative h-full">
-      <button onClick={getTriviaQuestion}></button>
-      {gameState.questionCategory === "playerGuess" ? (
+    <div className="p-4 relative h-screen ">
+      <GuessThePlayer playersHeadshots={playersHeadshots} />
+
+      {/* {gameState.questionCategory === "playerGuess" ? (
         <GuessThePlayer />
       ) : (
         <TriviaQuestion />
-      )}
+      )} */}
     </div>
   );
 }
